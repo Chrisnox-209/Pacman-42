@@ -12,6 +12,8 @@ BACKGROUND_COLOR = (8, 12, 38)
 HUD_BACKGROUND_COLOR = (15, 22, 58)
 HUD_LABEL_COLOR = (153, 174, 255)
 HUD_VALUE_COLOR = (255, 255, 255)
+MENU_TEXT_COLOR = (220, 225, 255)
+MENU_SELECTED_COLOR = (255, 224, 70)
 MAZE_WALL_COLOR = (42, 112, 255)
 PELLET_COLOR = (255, 224, 170)
 PACMAN_SIZE = (24, 24)
@@ -46,6 +48,7 @@ TEST_MAZE_LAYOUT = (
     "#.............#",
     "###############",
 )
+MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 MazeGrid = list[list[int]]
 
 
@@ -165,6 +168,60 @@ def draw_hud(
         screen.blit(value_image, (x, 42))
 
 
+def draw_menu(
+    screen: pygame.Surface,
+    title_font: pygame.font.Font,
+    option_font: pygame.font.Font,
+    selected_option: int,
+) -> None:
+    """Affiche le titre du jeu et les choix du menu principal."""
+    title = title_font.render("PAC-MAN", True, MENU_SELECTED_COLOR)
+    title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 150))
+    screen.blit(title, title_rect)
+
+    for index, option in enumerate(MENU_OPTIONS):
+        is_selected = index == selected_option
+        color = MENU_SELECTED_COLOR if is_selected else MENU_TEXT_COLOR
+        prefix = ">  " if is_selected else "   "
+        option_image = option_font.render(prefix + option, True, color)
+        option_rect = option_image.get_rect(
+            center=(WINDOW_WIDTH // 2, 270 + index * 55)
+        )
+        screen.blit(option_image, option_rect)
+
+    help_text = option_font.render(
+        "UP / DOWN: select     ENTER: choose", True, HUD_LABEL_COLOR
+    )
+    help_rect = help_text.get_rect(center=(WINDOW_WIDTH // 2, 530))
+    screen.blit(help_text, help_rect)
+
+
+def draw_info_page(
+    screen: pygame.Surface,
+    title_font: pygame.font.Font,
+    text_font: pygame.font.Font,
+    title: str,
+    lines: tuple[str, ...],
+) -> None:
+    """Affiche une page simple avec un titre, du texte et le retour."""
+    title_image = title_font.render(title, True, MENU_SELECTED_COLOR)
+    title_rect = title_image.get_rect(center=(WINDOW_WIDTH // 2, 150))
+    screen.blit(title_image, title_rect)
+
+    for index, line in enumerate(lines):
+        line_image = text_font.render(line, True, MENU_TEXT_COLOR)
+        line_rect = line_image.get_rect(
+            center=(WINDOW_WIDTH // 2, 270 + index * 48)
+        )
+        screen.blit(line_image, line_rect)
+
+    return_image = text_font.render(
+        "ENTER or ESC: return to menu", True, HUD_LABEL_COLOR
+    )
+    return_rect = return_image.get_rect(center=(WINDOW_WIDTH // 2, 530))
+    screen.blit(return_image, return_rect)
+
+
 def move_pacman(
     position: tuple[float, float],
     direction: tuple[int, int],
@@ -203,10 +260,13 @@ def draw_pacman(
 
 
 def main() -> None:
-    """Déplace Pac-Man au clavier et anime sa bouche pendant le mouvement."""
+    """Affiche le menu et permet de jouer au prototype au clavier."""
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption(WINDOW_TITLE)
+    title_font = pygame.font.Font(None, 72)
+    menu_font = pygame.font.Font(None, 34)
+    info_font = pygame.font.Font(None, 30)
     label_font = pygame.font.Font(None, 24)
     value_font = pygame.font.Font(None, 34)
     open_image = pygame.image.load(PACMAN_IMAGE_PATH).convert_alpha()
@@ -231,52 +291,88 @@ def main() -> None:
     mouth_open = True
     animation_time = 0.0
     clock = pygame.time.Clock()
+    current_screen = "menu"
+    selected_option = 0
 
     running = True
     while running:
         delta_time = clock.tick(60) / 1000
-
         screen.fill(BACKGROUND_COLOR)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN:
+                if current_screen == "menu":
+                    if event.key == pygame.K_UP:
+                        selected_option = (selected_option - 1) % len(MENU_OPTIONS)
+                    elif event.key == pygame.K_DOWN:
+                        selected_option = (selected_option + 1) % len(MENU_OPTIONS)
+                    elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                        if selected_option == 0:
+                            current_screen = "game"
+                        elif selected_option == 1:
+                            current_screen = "highscores"
+                        elif selected_option == 2:
+                            current_screen = "instructions"
+                        else:
+                            running = False
+                elif current_screen in ("highscores", "instructions"):
+                    if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER,
+                                     pygame.K_ESCAPE):
+                        current_screen = "menu"
+                elif current_screen == "game" and event.key == pygame.K_ESCAPE:
+                    current_screen = "menu"
 
-        keys = pygame.key.get_pressed()
-        movement = {
-            pygame.K_RIGHT: ("right", (1, 0)),
-            pygame.K_LEFT: ("left", (-1, 0)),
-            pygame.K_UP: ("up", (0, -1)),
-            pygame.K_DOWN: ("down", (0, 1)),
-        }
-        move_direction = (0, 0)
-        for key, (new_direction, vector) in movement.items():
-            if keys[key]:
-                direction = new_direction
-                move_direction = vector
-                break
-
-        if move_direction != (0, 0):
-            pacman_position = move_pacman(
-                pacman_position, move_direction, delta_time, maze_bounds
+        if current_screen == "menu":
+            draw_menu(screen, title_font, menu_font, selected_option)
+        elif current_screen == "highscores":
+            draw_info_page(
+                screen, title_font, info_font, "HIGHSCORES",
+                ("No scores saved yet.",),
             )
-            animation_time += delta_time
-            if animation_time >= ANIMATION_INTERVAL:
-                mouth_open = not mouth_open
-                animation_time = 0.0
+        elif current_screen == "instructions":
+            draw_info_page(
+                screen, title_font, info_font, "INSTRUCTIONS",
+                ("Use the arrow keys to move Pac-Man.",
+                 "Press ESC to return to the menu."),
+            )
         else:
-            mouth_open = True
-            animation_time = 0.0
+            keys = pygame.key.get_pressed()
+            movement = {
+                pygame.K_RIGHT: ("right", (1, 0)),
+                pygame.K_LEFT: ("left", (-1, 0)),
+                pygame.K_UP: ("up", (0, -1)),
+                pygame.K_DOWN: ("down", (0, 1)),
+            }
+            move_direction = (0, 0)
+            for key, (new_direction, vector) in movement.items():
+                if keys[key]:
+                    direction = new_direction
+                    move_direction = vector
+                    break
 
-        draw_hud(
-            screen, label_font, value_font, score, lives, level,
-            remaining_time
-        )
-        draw_maze(screen, test_maze, maze_origin)
-        draw_pacman(
-            screen, open_image, closed_image, pacman_position,
-            direction, mouth_open
-        )
+            if move_direction != (0, 0):
+                pacman_position = move_pacman(
+                    pacman_position, move_direction, delta_time, maze_bounds
+                )
+                animation_time += delta_time
+                if animation_time >= ANIMATION_INTERVAL:
+                    mouth_open = not mouth_open
+                    animation_time = 0.0
+            else:
+                mouth_open = True
+                animation_time = 0.0
+
+            draw_hud(
+                screen, label_font, value_font, score, lives, level,
+                remaining_time
+            )
+            draw_maze(screen, test_maze, maze_origin)
+            draw_pacman(
+                screen, open_image, closed_image, pacman_position,
+                direction, mouth_open
+            )
         pygame.display.flip()
 
     pygame.quit()
