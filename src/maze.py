@@ -1,8 +1,12 @@
-"""Terminal maze renderer with Pac-Man and four ghosts."""
+"""Terminal maze renderer using Ghost objects provided by the caller."""
 
 import curses
+from typing import TYPE_CHECKING
 
 from mazegenerator import MazeGenerator
+
+if TYPE_CHECKING:
+    from src.ghost import Ghost
 
 
 NORTH = 1
@@ -42,60 +46,46 @@ def find_nearest_open_cell(
     start_x: int,
     start_y: int,
 ) -> tuple[int, int]:
-    """Find the nearest non-isolated cell from a starting position."""
-    max_y = len(maze)
-    max_x = len(maze[0])
+    """Find the nearest cell that is not completely blocked."""
+    height = len(maze)
+    width = len(maze[0])
 
-    radius = 0
-
-    while radius < max(max_x, max_y):
-        for y in range(max(0, start_y - radius), min(max_y, start_y + radius + 1)):
-            for x in range(max(0, start_x - radius), min(max_x, start_x + radius + 1)):
+    for radius in range(max(width, height)):
+        for y in range(
+            max(0, start_y - radius),
+            min(height, start_y + radius + 1),
+        ):
+            for x in range(
+                max(0, start_x - radius),
+                min(width, start_x + radius + 1),
+            ):
                 if maze[y][x] != 15:
                     return x, y
-
-        radius += 1
 
     return 0, 0
 
 
-def get_start_positions(
-    maze: list[list[int]],
-) -> tuple[tuple[int, int], list[tuple[int, int]]]:
-    """Return Pac-Man center position and four ghost corner positions."""
+def get_pacman_start(maze: list[list[int]]) -> tuple[int, int]:
+    """Return a usable Pac-Man start position near the maze center."""
     height = len(maze)
     width = len(maze[0])
 
-    pacman_start = find_nearest_open_cell(
+    return find_nearest_open_cell(
         maze,
         width // 2,
         height // 2,
     )
 
-    ghost_targets = [
-        (0, 0),
-        (width - 1, 0),
-        (0, height - 1),
-        (width - 1, height - 1),
-    ]
-
-    ghosts = [
-        find_nearest_open_cell(maze, x, y)
-        for x, y in ghost_targets
-    ]
-
-    return pacman_start, ghosts
-
 
 def build_maze_cells(
     maze: list[list[int]],
     pacman: tuple[int, int],
-    ghosts: list[tuple[int, int]],
+    ghosts: list["Ghost"],
 ) -> list[list[tuple[str, int]]]:
-    """Build terminal lines with color-pair information."""
+    """Build terminal lines using Pac-Man and Ghost object positions."""
     lines: list[list[tuple[str, int]]] = []
     pacman_x, pacman_y = pacman
-    ghost_positions = set(ghosts)
+    ghost_positions = {(ghost.x, ghost.y) for ghost in ghosts}
 
     for y, row in enumerate(maze):
         top: list[tuple[str, int]] = []
@@ -121,11 +111,12 @@ def build_maze_cells(
         lines.append(middle)
 
     bottom: list[tuple[str, int]] = []
+
     for cell in maze[-1]:
         bottom.append(("+", 0))
         bottom.append(("---" if has_wall(cell, SOUTH) else "   ", 0))
-    bottom.append(("+", 0))
 
+    bottom.append(("+", 0))
     lines.append(bottom)
 
     return lines
@@ -144,18 +135,26 @@ def draw_colored_line(
             if color_pair == 0:
                 stdscr.addstr(y, x, text)
             else:
-                stdscr.addstr(y, x, text, curses.color_pair(color_pair))
+                stdscr.addstr(
+                    y,
+                    x,
+                    text,
+                    curses.color_pair(color_pair),
+                )
         except curses.error:
             pass
 
         x += len(text)
 
 
-def game(stdscr: curses.window) -> None:
-    """Run the terminal maze."""
+def game(
+    stdscr: curses.window,
+    ghosts: list["Ghost"],
+) -> None:
+    """Run the terminal maze using Ghost objects created outside this module."""
     curses.curs_set(0)
     stdscr.keypad(True)
-
+    
     if curses.has_colors():
         curses.start_color()
         curses.use_default_colors()
@@ -169,8 +168,7 @@ def game(stdscr: curses.window) -> None:
     )
 
     maze = generator.maze
-    pacman_start, ghosts = get_start_positions(maze)
-    pacman_x, pacman_y = pacman_start
+    pacman_x, pacman_y = get_pacman_start(maze)
 
     while True:
         stdscr.clear()
@@ -184,10 +182,12 @@ def game(stdscr: curses.window) -> None:
         for index, line in enumerate(lines):
             draw_colored_line(stdscr, index, line)
 
-        help_line = len(lines) + 1
-
         try:
-            stdscr.addstr(help_line, 0, "* = Pac-Man | # = Ghost | Move: arrows/WASD | Quit: Q")
+            stdscr.addstr(
+                len(lines) + 1,
+                0,
+                "* = Pac-Man | # = Ghost | Move: arrows/WASD | Quit: Q",
+            )
         except curses.error:
             pass
 
