@@ -26,7 +26,7 @@ def convert_wall(nb: int) -> dict[str, int] | None:
     elif nb == 12:
         return {"N": 1, "S": 0, "E": 1, "W": 0}
     elif nb == 13:
-        return {"N": 0, "S": 0, "E": 1, "W": 0}       
+        return {"N": 0, "S": 0, "E": 1, "W": 0}
     elif nb == 14:
         return {"N": 1, "S": 0, "E": 0, "W": 0}
     elif nb == 15:

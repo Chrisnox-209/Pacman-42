@@ -1,19 +1,18 @@
-from src.maze import game
 from src.ghost import Ghost
 from mazegenerator import MazeGenerator
-import curses
+from typing import Any
 
 
 def main() -> None:
-    generator = MazeGenerator(
+    generator: Any = MazeGenerator(
         size=(20, 20),
         perfect=False,
         seed=42,
     )
 
-    maze = generator.maze
+    maze: Any | Any = generator.maze
 
-    ghosts = [
+    ghosts: list[Ghost] = [
         Ghost(0, 0, (0, 0), "Athos"),
         Ghost(19, 0, (19, 0), "Porthos"),
         Ghost(0, 19, (0, 19), "Aramis"),

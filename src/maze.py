@@ -14,7 +14,7 @@ EAST = 2
 SOUTH = 4
 WEST = 8
 
-DIRECTIONS = {
+DIRECTIONS: dict[int, tuple[int, int, int]] = {
     curses.KEY_UP: (0, -1, NORTH),
     curses.KEY_RIGHT: (1, 0, EAST),
     curses.KEY_DOWN: (0, 1, SOUTH),
@@ -47,8 +47,8 @@ def find_nearest_open_cell(
     start_y: int,
 ) -> tuple[int, int]:
     """Find the nearest cell that is not completely blocked."""
-    height = len(maze)
-    width = len(maze[0])
+    height: int = len(maze)
+    width: int = len(maze[0])
 
     for radius in range(max(width, height)):
         for y in range(
@@ -67,8 +67,8 @@ def find_nearest_open_cell(
 
 def get_pacman_start(maze: list[list[int]]) -> tuple[int, int]:
     """Return a usable Pac-Man start position near the maze center."""
-    height = len(maze)
-    width = len(maze[0])
+    height: int = len(maze)
+    width: int = len(maze[0])
 
     return find_nearest_open_cell(
         maze,
@@ -84,8 +84,12 @@ def build_maze_cells(
 ) -> list[list[tuple[str, int]]]:
     """Build terminal lines using Pac-Man and Ghost object positions."""
     lines: list[list[tuple[str, int]]] = []
+    pacman_x: int
+    pacman_y: int
     pacman_x, pacman_y = pacman
-    ghost_positions = {(ghost.x, ghost.y) for ghost in ghosts}
+    ghost_positions: set[tuple[int, int]] = {
+        (ghost.x, ghost.y) for ghost in ghosts
+    }
 
     for y, row in enumerate(maze):
         top: list[tuple[str, int]] = []
@@ -128,7 +132,7 @@ def draw_colored_line(
     parts: list[tuple[str, int]],
 ) -> None:
     """Draw one maze line with optional colors."""
-    x = 0
+    x: int = 0
 
     for text, color_pair in parts:
         try:
@@ -151,29 +155,31 @@ def game(
     stdscr: curses.window,
     ghosts: list["Ghost"],
 ) -> None:
-    """Run the terminal maze using Ghost objects created outside this module."""
+    """Run the terminal maze using external Ghost objects."""
     curses.curs_set(0)
     stdscr.keypad(True)
-    
+
     if curses.has_colors():
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_YELLOW, -1)
         curses.init_pair(2, curses.COLOR_RED, -1)
 
-    generator = MazeGenerator(
+    generator: MazeGenerator = MazeGenerator(
         size=(20, 20),
         perfect=False,
         seed=42,
     )
 
-    maze = generator.maze
+    maze: list[list[int]] = generator.maze
+    pacman_x: int
+    pacman_y: int
     pacman_x, pacman_y = get_pacman_start(maze)
 
     while True:
         stdscr.clear()
 
-        lines = build_maze_cells(
+        lines: list[list[tuple[str, int]]] = build_maze_cells(
             maze,
             (pacman_x, pacman_y),
             ghosts,
@@ -192,21 +198,24 @@ def game(
             pass
 
         stdscr.refresh()
-        key = stdscr.getch()
+        key: int = stdscr.getch()
 
         if key in (ord("q"), ord("Q")):
             break
 
-        movement = DIRECTIONS.get(key)
+        movement: tuple[int, int, int] | None = DIRECTIONS.get(key)
 
         if movement is None:
             continue
 
+        dx: int
+        dy: int
+        wall: int
         dx, dy, wall = movement
 
         if can_move(maze, pacman_x, pacman_y, wall):
-            next_x = pacman_x + dx
-            next_y = pacman_y + dy
+            next_x: int = pacman_x + dx
+            next_y: int = pacman_y + dy
 
             if (
                 0 <= next_y < len(maze)

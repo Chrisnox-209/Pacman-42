@@ -18,6 +18,6 @@ class Ghost:
         self.x = x
         self.y = y
 
-    def check_path(self, maze) -> dict[str, int] | None:
+    def check_path(self, maze: list[list[int]]) -> dict[str, int] | None:
         wall: int = maze[self.y][self.x]
         return convert_wall(wall)
