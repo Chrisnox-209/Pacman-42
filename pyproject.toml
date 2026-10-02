@@ -5,7 +5,9 @@ description = "Classic arcade game Pac-Man in Python."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "flake8>=7.4.1",
     "mazegenerator",
+    "mypy>=2.4.0",
 ]
 
 [project.scripts]
