@@ -1,9 +1,7 @@
-"""Terminal maze renderer using Ghost objects provided by the caller."""
+from __future__ import annotations
 
 import curses
 from typing import TYPE_CHECKING
-
-from mazegenerator import MazeGenerator
 
 if TYPE_CHECKING:
     from src.ghost import Ghost
@@ -14,213 +12,249 @@ EAST = 2
 SOUTH = 4
 WEST = 8
 
-DIRECTIONS: dict[int, tuple[int, int, int]] = {
-    curses.KEY_UP: (0, -1, NORTH),
-    curses.KEY_RIGHT: (1, 0, EAST),
-    curses.KEY_DOWN: (0, 1, SOUTH),
-    curses.KEY_LEFT: (-1, 0, WEST),
-    ord("w"): (0, -1, NORTH),
-    ord("d"): (1, 0, EAST),
-    ord("s"): (0, 1, SOUTH),
-    ord("a"): (-1, 0, WEST),
+CELL_WIDTH = 4
+
+PLAYER_COLOR = 5
+
+GHOST_COLORS: dict[str, int] = {
+    "Athos": 1,
+    "Porthos": 2,
+    "Aramis": 3,
+    "Dartagnan": 4,
 }
 
 
-def has_wall(cell: int, wall: int) -> bool:
-    """Return True if the given wall bit is present in the cell."""
-    return (cell & wall) != 0
+def setup_terminal(stdscr: curses.window) -> None:
+    """Configure curses for the terminal test display."""
+    curses.curs_set(0)
+    stdscr.nodelay(True)
+    stdscr.keypad(True)
+    stdscr.leaveok(True)
+
+    if not curses.has_colors():
+        return
+
+    curses.start_color()
+    curses.use_default_colors()
+
+    curses.init_pair(1, curses.COLOR_RED, -1)
+    curses.init_pair(2, curses.COLOR_MAGENTA, -1)
+    curses.init_pair(3, curses.COLOR_CYAN, -1)
+    curses.init_pair(4, curses.COLOR_GREEN, -1)
+    curses.init_pair(PLAYER_COLOR, curses.COLOR_YELLOW, -1)
 
 
-def can_move(
-    maze: list[list[int]],
-    x: int,
-    y: int,
-    wall: int,
-) -> bool:
-    """Return True if movement is possible from the current cell."""
-    return not has_wall(maze[y][x], wall)
-
-
-def find_nearest_open_cell(
-    maze: list[list[int]],
-    start_x: int,
-    start_y: int,
-) -> tuple[int, int]:
-    """Find the nearest cell that is not completely blocked."""
-    height: int = len(maze)
-    width: int = len(maze[0])
-
-    for radius in range(max(width, height)):
-        for y in range(
-            max(0, start_y - radius),
-            min(height, start_y + radius + 1),
-        ):
-            for x in range(
-                max(0, start_x - radius),
-                min(width, start_x + radius + 1),
-            ):
-                if maze[y][x] != 15:
-                    return x, y
-
-    return 0, 0
-
-
-def get_pacman_start(maze: list[list[int]]) -> tuple[int, int]:
-    """Return a usable Pac-Man start position near the maze center."""
-    height: int = len(maze)
-    width: int = len(maze[0])
-
-    return find_nearest_open_cell(
-        maze,
-        width // 2,
-        height // 2,
-    )
-
-
-def build_maze_cells(
-    maze: list[list[int]],
-    pacman: tuple[int, int],
-    ghosts: list["Ghost"],
-) -> list[list[tuple[str, int]]]:
-    """Build terminal lines using Pac-Man and Ghost object positions."""
-    lines: list[list[tuple[str, int]]] = []
-    pacman_x: int
-    pacman_y: int
-    pacman_x, pacman_y = pacman
-    ghost_positions: set[tuple[int, int]] = {
-        (ghost.x, ghost.y) for ghost in ghosts
+def get_ghost_symbol(name: str) -> str:
+    """Return a short terminal symbol for a ghost."""
+    symbols: dict[str, str] = {
+        "Athos": "A",
+        "Porthos": "P",
+        "Aramis": "R",
+        "Dartagnan": "D",
     }
 
-    for y, row in enumerate(maze):
-        top: list[tuple[str, int]] = []
-        middle: list[tuple[str, int]] = []
+    if name in symbols:
+        return symbols[name]
 
-        for x, cell in enumerate(row):
-            top.append(("+", 0))
-            top.append(("---" if has_wall(cell, NORTH) else "   ", 0))
+    if name:
+        return name[0].upper()
 
-            middle.append(("|" if has_wall(cell, WEST) else " ", 0))
-
-            if (x, y) == (pacman_x, pacman_y):
-                middle.append((" * ", 1))
-            elif (x, y) in ghost_positions:
-                middle.append((" # ", 2))
-            else:
-                middle.append(("   ", 0))
-
-        top.append(("+", 0))
-        middle.append(("|" if has_wall(row[-1], EAST) else " ", 0))
-
-        lines.append(top)
-        lines.append(middle)
-
-    bottom: list[tuple[str, int]] = []
-
-    for cell in maze[-1]:
-        bottom.append(("+", 0))
-        bottom.append(("---" if has_wall(cell, SOUTH) else "   ", 0))
-
-    bottom.append(("+", 0))
-    lines.append(bottom)
-
-    return lines
+    return "G"
 
 
-def draw_colored_line(
+def get_ghost_style(name: str) -> int:
+    """Return the curses style associated with a ghost."""
+    if not curses.has_colors():
+        return curses.A_BOLD
+
+    color_id = GHOST_COLORS.get(name)
+
+    if color_id is None:
+        return curses.A_BOLD
+
+    return curses.color_pair(color_id) | curses.A_BOLD
+
+
+def get_player_style() -> int:
+    """Return the curses style used for the player."""
+    if not curses.has_colors():
+        return curses.A_BOLD
+
+    return curses.color_pair(PLAYER_COLOR) | curses.A_BOLD
+
+
+def draw_horizontal_wall(
     stdscr: curses.window,
-    y: int,
-    parts: list[tuple[str, int]],
-) -> None:
-    """Draw one maze line with optional colors."""
-    x: int = 0
+    row: int,
+    col: int,
+    cell: int,
+) -> int:
+    """Draw the north wall of one maze cell."""
+    stdscr.addstr(row, col, "+")
 
-    for text, color_pair in parts:
-        try:
-            if color_pair == 0:
-                stdscr.addstr(y, x, text)
-            else:
-                stdscr.addstr(
-                    y,
-                    x,
-                    text,
-                    curses.color_pair(color_pair),
-                )
-        except curses.error:
-            pass
+    if cell & NORTH:
+        stdscr.addstr(row, col + 1, "---")
+    else:
+        stdscr.addstr(row, col + 1, "   ")
 
-        x += len(text)
+    return col + CELL_WIDTH
 
 
-def game(
+def draw_cell(
     stdscr: curses.window,
-    ghosts: list["Ghost"],
-) -> None:
-    """Run the terminal maze using external Ghost objects."""
-    curses.curs_set(0)
-    stdscr.keypad(True)
+    row: int,
+    col: int,
+    cell: int,
+    ghost: Ghost | None,
+    is_player: bool,
+) -> int:
+    """Draw one maze cell and its optional entity."""
+    if cell & WEST:
+        stdscr.addstr(row, col, "|")
+    else:
+        stdscr.addstr(row, col, " ")
 
-    if curses.has_colors():
-        curses.start_color()
-        curses.use_default_colors()
-        curses.init_pair(1, curses.COLOR_YELLOW, -1)
-        curses.init_pair(2, curses.COLOR_RED, -1)
+    stdscr.addstr(row, col + 1, "   ")
 
-    generator: MazeGenerator = MazeGenerator(
-        size=(20, 20),
-        perfect=False,
-        seed=42,
-    )
-
-    maze: list[list[int]] = generator.maze
-    pacman_x: int
-    pacman_y: int
-    pacman_x, pacman_y = get_pacman_start(maze)
-
-    while True:
-        stdscr.clear()
-
-        lines: list[list[tuple[str, int]]] = build_maze_cells(
-            maze,
-            (pacman_x, pacman_y),
-            ghosts,
+    if is_player:
+        stdscr.addstr(
+            row,
+            col + 2,
+            "*",
+            get_player_style(),
+        )
+    elif ghost is not None:
+        stdscr.addstr(
+            row,
+            col + 2,
+            get_ghost_symbol(ghost.name),
+            get_ghost_style(ghost.name),
         )
 
-        for index, line in enumerate(lines):
-            draw_colored_line(stdscr, index, line)
+    return col + CELL_WIDTH
 
-        try:
-            stdscr.addstr(
-                len(lines) + 1,
-                0,
-                "* = Pac-Man | # = Ghost | Move: arrows/WASD | Quit: Q",
+
+def draw_bottom_wall(
+    stdscr: curses.window,
+    row: int,
+    maze: list[list[int]],
+) -> None:
+    """Draw the south border of the maze."""
+    width = len(maze[0])
+    col = 0
+
+    for x in range(width):
+        cell = maze[-1][x]
+
+        stdscr.addstr(row, col, "+")
+
+        if cell & SOUTH:
+            stdscr.addstr(row, col + 1, "---")
+        else:
+            stdscr.addstr(row, col + 1, "   ")
+
+        col += CELL_WIDTH
+
+    stdscr.addstr(row, col, "+")
+
+
+def draw_status(
+    stdscr: curses.window,
+    start_row: int,
+    player: tuple[int, int],
+    ghosts: list[Ghost],
+) -> None:
+    """Display player and ghost coordinates below the maze."""
+    player_x, player_y = player
+
+    stdscr.addstr(
+        start_row,
+        0,
+        f"Player     ({player_x:>2}, {player_y:>2})",
+    )
+
+    row = start_row + 1
+
+    for ghost in ghosts:
+        stdscr.addstr(
+            row,
+            0,
+            f"{ghost.name:<10} ({ghost.x:>2}, {ghost.y:>2})",
+        )
+        row += 1
+
+    stdscr.addstr(
+        row + 1,
+        0,
+        "Arrows / WASD: move player | Q: quit",
+    )
+
+
+def draw_maze(
+    stdscr: curses.window,
+    maze: list[list[int]],
+    ghosts: list[Ghost],
+    player: tuple[int, int],
+) -> None:
+    """Draw maze, ghosts and player without updating game state."""
+    if not maze:
+        raise ValueError("Maze cannot be empty.")
+
+    if not maze[0]:
+        raise ValueError("Maze rows cannot be empty.")
+
+    width = len(maze[0])
+
+    if any(len(row) != width for row in maze):
+        raise ValueError("Maze rows must all have the same width.")
+
+    player_x, player_y = player
+
+    ghost_positions: dict[tuple[int, int], Ghost] = {
+        (ghost.x, ghost.y): ghost
+        for ghost in ghosts
+    }
+
+    row = 0
+
+    for y, maze_row in enumerate(maze):
+        col = 0
+
+        for cell in maze_row:
+            col = draw_horizontal_wall(
+                stdscr,
+                row,
+                col,
+                cell,
             )
-        except curses.error:
-            pass
 
-        stdscr.refresh()
-        key: int = stdscr.getch()
+        stdscr.addstr(row, col, "+")
+        row += 1
+        col = 0
 
-        if key in (ord("q"), ord("Q")):
-            break
+        for x, cell in enumerate(maze_row):
+            ghost = ghost_positions.get((x, y))
 
-        movement: tuple[int, int, int] | None = DIRECTIONS.get(key)
+            col = draw_cell(
+                stdscr,
+                row,
+                col,
+                cell,
+                ghost,
+                (x, y) == (player_x, player_y),
+            )
 
-        if movement is None:
-            continue
+        last_cell = maze_row[-1]
 
-        dx: int
-        dy: int
-        wall: int
-        dx, dy, wall = movement
+        if last_cell & EAST:
+            stdscr.addstr(row, col, "|")
+        else:
+            stdscr.addstr(row, col, " ")
 
-        if can_move(maze, pacman_x, pacman_y, wall):
-            next_x: int = pacman_x + dx
-            next_y: int = pacman_y + dy
+        row += 1
 
-            if (
-                0 <= next_y < len(maze)
-                and 0 <= next_x < len(maze[0])
-                and maze[next_y][next_x] != 15
-            ):
-                pacman_x = next_x
-                pacman_y = next_y
+    draw_bottom_wall(stdscr, row, maze)
+    draw_status(stdscr, row + 2, player, ghosts)
+
+    stdscr.noutrefresh()
+    curses.doupdate()

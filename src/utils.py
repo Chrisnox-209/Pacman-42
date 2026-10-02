@@ -33,3 +33,15 @@ def convert_wall(nb: int) -> dict[str, int] | None:
         return {"N": 0, "S": 0, "E": 0, "W": 0}
     else:
         return None
+
+
+def mirror_path(path: str) -> str:
+    if path == "N":
+        return "S"
+    if path == "S":
+        return "N"
+    if path == "E":
+        return "W"
+    if path == "W":
+        return "E"
+    return ""
