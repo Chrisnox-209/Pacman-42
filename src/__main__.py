@@ -1,6 +1,7 @@
 from src.maze import draw_maze, setup_terminal
 from src.ghost import Ghost
 from mazegenerator import MazeGenerator
+from src.algorithm import bfs
 import curses
 import time
 
@@ -72,41 +73,41 @@ def run(
         "Dartagnan": None,
     }
 
-    while True:
-        key = stdscr.getch()
+    # while True:
+    #     key = stdscr.getch()
 
-        if key in (ord("q"), ord("Q")):
-            break
+    #     if key in (ord("q"), ord("Q")):
+    #         break
 
-        player = move_player(
-            maze,
-            player,
-            key,
-        )
+    #     player = move_player(
+    #         maze,
+    #         player,
+    #         key,
+    #     )
 
-        for ghost in ghosts:
-            path = ghost.check_path(maze)
+    #     for ghost in ghosts:
+    #         path = ghost.check_path(maze)
 
-            if path is None:
-                continue
+    #         if path is None:
+    #             continue
 
-            direction = ghost.move(
-                path,
-                last_paths[ghost.name],
-            )
+    #         direction = ghost.move(
+    #             path,
+    #             last_paths[ghost.name],
+    #         )
 
-            if direction is not None:
-                ghost.move_to(direction)
-                last_paths[ghost.name] = direction
+    #         if direction is not None:
+    #             ghost.move_to(direction)
+    #             last_paths[ghost.name] = direction
 
-        draw_maze(
-            stdscr,
-            maze,
-            ghosts,
-            player,
-        )
+    #     draw_maze(
+    #         stdscr,
+    #         maze,
+    #         ghosts,
+    #         player,
+    #     )
 
-        time.sleep(0.3)
+    #     time.sleep(0.3)
 
 
 def main() -> None:
@@ -125,11 +126,16 @@ def main() -> None:
         Ghost(19, 19, (19, 19), "Dartagnan"),
     ]
 
+
+
     curses.wrapper(
         run,
         maze,
         ghosts,
     )
+
+    bfs((0, 0), (18, 18), maze)
+
 
 
 if __name__ == "__main__":
