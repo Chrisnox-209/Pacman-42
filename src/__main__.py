@@ -1,9 +1,8 @@
-from src.algorithm import bfs, preshoot
+from src.algorithm import bfs, preshoot, move_randomly
 from src.game import GameState, Player
 from src.ghost import Ghost
 from src.maze import draw_maze, setup_terminal
 from mazegenerator import MazeGenerator
-import random
 import curses
 import time
 
@@ -11,11 +10,11 @@ import time
 def find_player_spawn(
     maze: list[list[int]],
 ) -> tuple[int, int]:
-    height = len(maze)
-    width = len(maze[0])
+    height: int = len(maze)
+    width: int = len(maze[0])
 
-    center_x = width // 2
-    center_y = height // 2
+    center_x: int = width // 2
+    center_y: int = height // 2
 
     for radius in range(max(width, height)):
         for y in range(
@@ -37,7 +36,7 @@ def move_player(
     player: Player,
     key: int,
 ) -> None:
-    wall = maze[player.y][player.x]
+    wall: int = maze[player.y][player.x]
 
     if key in (curses.KEY_UP, ord("w")):
         if wall & 1 == 0:
@@ -77,7 +76,7 @@ def run(
     }
 
     while True:
-        key = stdscr.getch()
+        key: int = stdscr.getch()
 
         if key in (ord("q"), ord("Q")):
             break
@@ -105,9 +104,8 @@ def run(
             elif ghost.name == "Porthos":
                 start = (ghost.y, ghost.x)
                 position_player: tuple[int, int] = (player.y, player.x)
-                multi: int = random.randint(1, 3)
 
-                target = preshoot(position_player, multi, maze)
+                target = preshoot(position_player, maze)
 
                 route = bfs(
                     start,
@@ -123,7 +121,7 @@ def run(
                 if path is None:
                     continue
 
-                direction: str | None = ghost.move(
+                direction: str | None = move_randomly(
                     path,
                     last_paths[ghost.name],
                 )
@@ -151,7 +149,8 @@ def main() -> None:
     )
 
     maze: list[list[int]] = generator.maze
-
+    player_x: int
+    player_y: int
     player_x, player_y = find_player_spawn(maze)
 
     player = Player(

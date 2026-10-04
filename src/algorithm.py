@@ -1,4 +1,4 @@
-from src.utils import possible_neighbor
+from src.utils import possible_neighbor, mirror_path
 from collections import deque
 import random
 
@@ -57,13 +57,14 @@ def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
         final_path.append(point)
 
 
-def preshoot(pos_player: tuple[int, int], multi: int,
+def preshoot(pos_player: tuple[int, int],
              maze: list[list[int]]) -> tuple[int, int]:
     y: int = pos_player[0]
     x: int = pos_player[1]
     cell_player: int = maze[y][x]
     neighbor_player: list[tuple[int, int]] | None = []
     target: tuple[int, int] = pos_player
+    multi: int = random.randint(1, 4)
 
     for i in range(multi):
         neighbor_player = possible_neighbor(cell_player, y, x)
@@ -73,3 +74,20 @@ def preshoot(pos_player: tuple[int, int], multi: int,
             x = target[1]
             cell_player = maze[y][x]
     return target
+
+
+def move_randomly(path: dict[str, int],
+                  last_path: str | None) -> str | None:
+    direction: list[str] = []
+
+    for key, value in path.items():
+        if value == 1:
+            direction.append(key)
+
+    if not direction:
+        return None
+
+    if mirror_path(last_path) in direction and len(direction) > 1:
+        direction.remove(mirror_path(last_path))
+
+    return random.choice(direction)

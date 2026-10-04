@@ -1,5 +1,4 @@
-from src.utils import convert_wall, mirror_path
-import random
+from src.utils import convert_wall
 
 
 class Ghost:
@@ -29,18 +28,3 @@ class Ghost:
     def check_path(self, maze: list[list[int]]) -> dict[str, int] | None:
         wall: int = maze[self.y][self.x]
         return convert_wall(wall)
-
-    def move(self, path: dict[str, int], last_path: str | None) -> str | None:
-        direction: list[str] = []
-
-        for key, value in path.items():
-            if value == 1:
-                direction.append(key)
-
-        if not direction:
-            return None
-
-        if mirror_path(last_path) in direction and len(direction) > 1:
-            direction.remove(mirror_path(last_path))
-
-        return random.choice(direction)
