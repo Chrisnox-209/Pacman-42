@@ -57,8 +57,8 @@ def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
         final_path.append(point)
 
 
-def preshot(pos_player: tuple[int, int], multi: int,
-            maze: list[list[int]]) -> tuple[int, int]:
+def preshoot(pos_player: tuple[int, int], multi: int,
+             maze: list[list[int]]) -> tuple[int, int]:
     y: int = pos_player[0]
     x: int = pos_player[1]
     cell_player: int = maze[y][x]

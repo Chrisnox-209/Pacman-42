@@ -1,4 +1,4 @@
-from src.algorithm import bfs, preshot
+from src.algorithm import bfs, preshoot
 from src.game import GameState, Player
 from src.ghost import Ghost
 from src.maze import draw_maze, setup_terminal
@@ -107,7 +107,7 @@ def run(
                 position_player: tuple[int, int] = (player.y, player.x)
                 multi: int = random.randint(1, 3)
 
-                target = preshot(position_player, multi, maze)
+                target = preshoot(position_player, multi, maze)
 
                 route = bfs(
                     start,
