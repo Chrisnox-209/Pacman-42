@@ -92,6 +92,10 @@ def run(
                 start: tuple[int, int] = (ghost.y, ghost.x)
                 target: tuple[int, int] = (player.y, player.x)
 
+                if start == target:
+                    ghosts.remove(ghost)
+                    continue
+                
                 route: list[tuple[int, int]] = bfs(
                     start,
                     target,
@@ -102,8 +106,12 @@ def run(
                     ghost.move_to_position(route[1])
 
             elif ghost.name == "Porthos":
+
                 start = (ghost.y, ghost.x)
                 position_player: tuple[int, int] = (player.y, player.x)
+                if start == position_player:
+                    ghosts.remove(ghost)
+                    continue
 
                 target = preshoot(position_player, maze)
 
@@ -116,6 +124,13 @@ def run(
                 if len(route) > 1:
                     ghost.move_to_position(route[1])
             else:
+                start = (ghost.y, ghost.x)
+                position_player = (player.y, player.x)
+                if start == position_player:
+                    ghosts.remove(ghost)
+                    continue
+
+
                 path: dict[str, int] | None = ghost.check_path(maze)
 
                 if path is None:
