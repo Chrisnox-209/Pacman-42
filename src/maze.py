@@ -12,7 +12,6 @@ NORTH = 1
 EAST = 2
 SOUTH = 4
 WEST = 8
-
 CELL_WIDTH = 4
 PLAYER_COLOR = 5
 
@@ -136,7 +135,7 @@ def draw_maze(
     ghosts: list[Ghost],
     game_state: GameState,
 ) -> None:
-    
+
     """Draw the current test state without changing game logic."""
     if not maze or not maze[0]:
         raise ValueError("Maze cannot be empty.")

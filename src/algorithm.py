@@ -1,5 +1,6 @@
 from src.utils import possible_neighbor
 from collections import deque
+import random
 
 
 def bfs(start: tuple[int, int], target: tuple[int, int],
@@ -54,3 +55,21 @@ def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
             return final_path[::-1]
         point = routing_table[point]
         final_path.append(point)
+
+
+def preshot(pos_player: tuple[int, int], multi: int,
+            maze: list[list[int]]) -> tuple[int, int]:
+    y: int = pos_player[0]
+    x: int = pos_player[1]
+    cell_player: int = maze[y][x]
+    neighbor_player: list[tuple[int, int]] | None = []
+    target: tuple[int, int] = pos_player
+
+    for i in range(multi):
+        neighbor_player = possible_neighbor(cell_player, y, x)
+        if neighbor_player:
+            target = random.choice(neighbor_player)
+            y = target[0]
+            x = target[1]
+            cell_player = maze[y][x]
+    return target

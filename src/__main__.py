@@ -1,8 +1,9 @@
-from src.algorithm import bfs
+from src.algorithm import bfs, preshot
 from src.game import GameState, Player
 from src.ghost import Ghost
 from src.maze import draw_maze, setup_terminal
 from mazegenerator import MazeGenerator
+import random
 import curses
 import time
 
@@ -101,6 +102,21 @@ def run(
                 if len(route) > 1:
                     ghost.move_to_position(route[1])
 
+            elif ghost.name == "Porthos":
+                start = (ghost.y, ghost.x)
+                position_player: tuple[int, int] = (player.y, player.x)
+                multi: int = random.randint(1, 3)
+
+                target = preshot(position_player, multi, maze)
+
+                route = bfs(
+                    start,
+                    target,
+                    maze,
+                )
+
+                if len(route) > 1:
+                    ghost.move_to_position(route[1])
             else:
                 path: dict[str, int] | None = ghost.check_path(maze)
 
