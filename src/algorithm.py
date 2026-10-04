@@ -35,9 +35,9 @@ def bfs(start: tuple[int, int], target: tuple[int, int],
         y = position[0]
         x = position[1]
 
-        print(f"line: {line}")
-        print("visited: ", visited)
-        print(f"new pos --> : {position}")
+        # (f"line: {line}")
+        # print("visited: ", visited)
+        # print(f"new pos --> : {position}")
 
 
 def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
@@ -50,7 +50,7 @@ def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
     while True:
 
         if point == start:
-            print(final_path[::-1])
+            # print(final_path[::-1])
             return final_path[::-1]
         point = routing_table[point]
         final_path.append(point)

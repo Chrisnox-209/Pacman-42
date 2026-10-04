@@ -73,41 +73,47 @@ def run(
         "Dartagnan": None,
     }
 
-    # while True:
-    #     key = stdscr.getch()
+    while True:
+        key = stdscr.getch()
 
-    #     if key in (ord("q"), ord("Q")):
-    #         break
+        if key in (ord("q"), ord("Q")):
+            break
 
-    #     player = move_player(
-    #         maze,
-    #         player,
-    #         key,
-    #     )
+        player = move_player(
+            maze,
+            player,
+            key,
+        )
 
-    #     for ghost in ghosts:
-    #         path = ghost.check_path(maze)
+        for ghost in ghosts:
+            
+            if ghost.name == "Athos":
+                start = (ghost.y, ghost.x)
+                target = (player[1], player[0])
+                route = bfs(start, target, maze)
+                ghost.move_to_position(route[1])
+            else:
+                path = ghost.check_path(maze)
 
-    #         if path is None:
-    #             continue
+                if path is None:
+                    continue
 
-    #         direction = ghost.move(
-    #             path,
-    #             last_paths[ghost.name],
-    #         )
+                direction = ghost.move(
+                    path,
+                    last_paths[ghost.name],
+                )
 
-    #         if direction is not None:
-    #             ghost.move_to(direction)
-    #             last_paths[ghost.name] = direction
+                if direction is not None:
+                    ghost.move_to_direction(direction)
+                    last_paths[ghost.name] = direction
 
-    #     draw_maze(
-    #         stdscr,
-    #         maze,
-    #         ghosts,
-    #         player,
-    #     )
-
-    #     time.sleep(0.3)
+        draw_maze(
+            stdscr,
+            maze,
+            ghosts,
+            player,
+        )
+        time.sleep(0.3)
 
 
 def main() -> None:
@@ -134,8 +140,7 @@ def main() -> None:
         ghosts,
     )
 
-    bfs((0, 0), (18, 18), maze)
-
+    # bfs((0, 0), (18, 18), maze)
 
 
 if __name__ == "__main__":

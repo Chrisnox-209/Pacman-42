@@ -12,7 +12,7 @@ class Ghost:
         self.spawn_position: tuple[int, int] = spawn_position
         self.name: str = name
 
-    def move_to(self, direction: str) -> None:
+    def move_to_direction(self, direction: str) -> None:
         if direction == "N":
             self.y = self.y - 1
         elif direction == "S":
@@ -21,6 +21,10 @@ class Ghost:
             self.x = self.x + 1
         elif direction == "W":
             self.x = self.x - 1
+
+    def move_to_position(self, position: tuple[int, int]) -> None:
+        self.y = position[0]
+        self.x = position[1]
 
     def check_path(self, maze: list[list[int]]) -> dict[str, int] | None:
         wall: int = maze[self.y][self.x]
