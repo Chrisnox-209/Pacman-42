@@ -72,7 +72,7 @@ def possible_neighbor(nb: int, y: int, x: int) -> list[tuple[int, int]] | None:
         return None
 
 
-def mirror_path(path: str) -> str:
+def mirror_path(path: str | None) -> str:
     if path == "N":
         return "S"
     if path == "S":

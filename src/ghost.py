@@ -30,7 +30,7 @@ class Ghost:
         wall: int = maze[self.y][self.x]
         return convert_wall(wall)
 
-    def move(self, path: dict[str, int], last_path: str) -> str | None:
+    def move(self, path: dict[str, int], last_path: str | None) -> str | None:
         direction: list[str] = []
 
         for key, value in path.items():
