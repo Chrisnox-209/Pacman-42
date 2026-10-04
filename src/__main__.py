@@ -95,7 +95,7 @@ def run(
                 if start == target:
                     ghosts.remove(ghost)
                     continue
-                
+
                 route: list[tuple[int, int]] = bfs(
                     start,
                     target,
@@ -129,7 +129,6 @@ def run(
                 if start == position_player:
                     ghosts.remove(ghost)
                     continue
-
 
                 path: dict[str, int] | None = ghost.check_path(maze)
 
