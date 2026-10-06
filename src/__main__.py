@@ -1,4 +1,4 @@
-from src.algorithm import bfs, preshoot, move_randomly
+from src.algorithm import bfs, preshoot, move_randomly, unpredictable
 from src.game import GameState, Player
 from src.ghost import Ghost
 from src.maze import draw_maze, setup_terminal
@@ -120,9 +120,22 @@ def run(
                     target,
                     maze,
                 )
-
                 if len(route) > 1:
                     ghost.move_to_position(route[1])
+
+            elif ghost.name == "Dartagnan":
+                start = (ghost.y, ghost.x)
+                position_player = (player.y, player.x)
+
+                if start == position_player:
+                    ghosts.remove(ghost)
+                    continue
+                way: tuple[int, int] = unpredictable(
+                     start, position_player, maze)
+
+                if len(route) > 1:
+                    ghost.move_to_position(way)
+
             else:
                 start = (ghost.y, ghost.x)
                 position_player = (player.y, player.x)

@@ -36,10 +36,6 @@ def bfs(start: tuple[int, int], target: tuple[int, int],
         y = position[0]
         x = position[1]
 
-        # (f"line: {line}")
-        # print("visited: ", visited)
-        # print(f"new pos --> : {position}")
-
 
 def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
                       start: tuple[int, int],
@@ -51,7 +47,6 @@ def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
     while True:
 
         if point == start:
-            # print(final_path[::-1])
             return final_path[::-1]
         point = routing_table[point]
         final_path.append(point)
@@ -91,3 +86,20 @@ def move_randomly(path: dict[str, int],
         direction.remove(mirror_path(last_path))
 
     return random.choice(direction)
+
+
+def unpredictable(start: tuple[int, int], pos_player: tuple[int, int],
+                  maze: list[list[int]]) -> tuple[int, int]:
+    nb: int = random.randint(1, 100)
+    if nb <= 70:
+        target: list[tuple[int, int]] = bfs(start, pos_player, maze)
+
+        return target[1]
+    wall: int = maze[start[0]][start[1]]
+    possible_choice: list[tuple[int, int]] | None = possible_neighbor(
+        wall, start[0], start[1])
+
+    if possible_choice:
+        return random.choice(possible_choice)
+
+    return pos_player
