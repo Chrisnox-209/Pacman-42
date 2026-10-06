@@ -1,3 +1,4 @@
 *.pdf
 *.whl
 __pycache__/
+*.lock
