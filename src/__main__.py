@@ -82,6 +82,8 @@ def run(
         "Dartagnan": None,
     }
 
+    pacgum: bool = False
+
     while True:
         key: int = stdscr.getch()
 
@@ -93,88 +95,93 @@ def run(
             player,
             key,
         )
-        for ghost in ghosts:
-            start: tuple[int, int] = (ghost.y, ghost.x)
-            target: tuple[int, int] = (player.y, player.x)
 
-            # if start == target:
-            #     ghosts.remove(ghost)
-            #     continue
+        if pacgum:
+            for ghost in ghosts:
+                start: tuple[int, int] = (ghost.y, ghost.x)
+                target: tuple[int, int] = (player.y, player.x)
 
-            route: tuple[int, int] = to_flee(start, target,
-                                             last_positions[ghost.name], maze)
-            last_positions[ghost.name] = start
-            ghost.move_to_position(route)
+                if start == target:
+                    ghosts.remove(ghost)
+                    continue
 
-        # for ghost in ghosts:
-        #     if ghost.name == "Athos":
-        #         start: tuple[int, int] = (ghost.y, ghost.x)
-        #         target: tuple[int, int] = (player.y, player.x)
+                route: tuple[int, int] = to_flee(start,
+                                                 target,
+                                                 last_positions[ghost.name],
+                                                 maze)
 
-        #         if start == target:
-        #             ghosts.remove(ghost)
-        #             continue
+                last_positions[ghost.name] = start
+                ghost.move_to_position(route)
+        else:
+            for ghost in ghosts:
+                if ghost.name == "Athos":
+                    start = (ghost.y, ghost.x)
+                    target = (player.y, player.x)
 
-        #         route: list[tuple[int, int]] = bfs(
-        #             start,
-        #             target,
-        #             maze,
-        #         )
+                    if start == target:
+                        ghosts.remove(ghost)
+                        continue
 
-        #         if len(route) > 1:
-        #             ghost.move_to_position(route[1])
+                    road: list[tuple[int, int]] = bfs(
+                        start,
+                        target,
+                        maze,
+                    )
 
-        #     elif ghost.name == "Porthos":
+                    if len(road) > 1:
+                        ghost.move_to_position(road[1])
 
-        #         start = (ghost.y, ghost.x)
-        #         position_player: tuple[int, int] = (player.y, player.x)
-        #         if start == position_player:
-        #             ghosts.remove(ghost)
-        #             continue
+                elif ghost.name == "Porthos":
 
-        #         target = preshoot(position_player, maze)
+                    start = (ghost.y, ghost.x)
+                    position_player: tuple[int, int] = (player.y, player.x)
+                    if start == position_player:
+                        ghosts.remove(ghost)
+                        continue
 
-        #         route = bfs(
-        #             start,
-        #             target,
-        #             maze,
-        #         )
-        #         if len(route) > 1:
-        #             ghost.move_to_position(route[1])
+                    target = preshoot(position_player, maze)
 
-        #     elif ghost.name == "Dartagnan":
-        #         start = (ghost.y, ghost.x)
-        #         position_player = (player.y, player.x)
+                    road = bfs(
+                        start,
+                        target,
+                        maze,
+                    )
+                    if len(road) > 1:
+                        ghost.move_to_position(road[1])
 
-        #         if start == position_player:
-        #             ghosts.remove(ghost)
-        #             continue
-        #         way: tuple[int, int] = unpredictable(
-        #              start, position_player, maze)
+                elif ghost.name == "Dartagnan":
+                    start = (ghost.y, ghost.x)
+                    position_player = (player.y, player.x)
 
-        #         if len(route) > 1:
-        #             ghost.move_to_position(way)
+                    if start == position_player:
+                        ghosts.remove(ghost)
+                        continue
+                    way: tuple[int, int] = unpredictable(
+                         start, position_player, maze)
 
-            # else:
-            #     start = (ghost.y, ghost.x)
-            #     position_player = (player.y, player.x)
-            #     if start == position_player:
-            #         ghosts.remove(ghost)
-            #         continue
+                    if len(road) > 1:
+                        ghost.move_to_position(way)
 
-            #     path: dict[str, int] | None = ghost.check_path(maze)
+                else:
+                    start = (ghost.y, ghost.x)
+                    position_player = (player.y, player.x)
+                    if start == position_player:
+                        ghosts.remove(ghost)
+                        continue
 
-            #     if path is None:
-            #         continue
+                    path: dict[str, int] | None = ghost.check_path(maze)
 
-            #     direction: str | None = move_randomly(
-            #         path,
-            #         last_paths[ghost.name],
-            #     )
+                    if path is None:
+                        continue
 
-            #     if direction is not None:
-            #         ghost.move_to_direction(direction)
-            #         last_paths[ghost.name] = direction
+                    direction: str | None = move_randomly(
+                        path,
+                        last_paths[ghost.name],
+                    )
+
+                    if direction is not None:
+                        ghost.move_to_direction(direction)
+                        last_paths[ghost.name] = direction
 
         draw_maze(
             stdscr,
