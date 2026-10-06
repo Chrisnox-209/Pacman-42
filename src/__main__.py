@@ -127,7 +127,7 @@ def run(
 
         else:
             for ghost in ghosts[:]:
-                start: tuple[int, int] = (
+                start = (
                     ghost.y,
                     ghost.x,
                 )
