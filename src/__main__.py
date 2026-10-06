@@ -222,12 +222,13 @@ def main() -> None:
         game_over=False,
         cheat=False,
     )
-
+    height: int = len(maze) - 1
+    width: int = len(maze[0]) - 1
     ghosts: list[Ghost] = [
-        Ghost(9, 7, (9, 7), "Athos"),
-        Ghost(11, 8, (11, 8), "Porthos"),
-        Ghost(9, 11, (9, 11), "Aramis"),
-        Ghost(7, 8, (7, 8), "Dartagnan"),
+        Ghost(0, 0, (0, 0), "Athos"),
+        Ghost(width, 0, (width, 0), "Porthos"),
+        Ghost(0, height, (0, height), "Aramis"),
+        Ghost(width, height, (width, height), "Dartagnan"),
     ]
 
     curses.wrapper(
