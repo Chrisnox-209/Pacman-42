@@ -1,0 +1,3 @@
+*.pdf
+*.whl
+__pycache__/
