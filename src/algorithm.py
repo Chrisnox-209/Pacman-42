@@ -103,3 +103,32 @@ def unpredictable(start: tuple[int, int], pos_player: tuple[int, int],
         return random.choice(possible_choice)
 
     return pos_player
+
+
+def to_flee(pos_ghost: tuple[int, int], pos_player: tuple[int, int],
+            last_pos_ghost: tuple[int, int] | None,
+            maze: list[list[int]]) -> tuple[int, int]:
+
+    route: list[tuple[int, int]] = bfs(pos_ghost, pos_player, maze)
+
+    if pos_ghost == pos_player:
+        return pos_ghost
+
+    if route:
+        cell_ghost: tuple[int, int] = route[0]
+        cell: int = maze[cell_ghost[0]][cell_ghost[1]]
+
+        neighbor_ghost: list[tuple[int, int]] | None = possible_neighbor(
+            cell, pos_ghost[0], pos_ghost[1])
+
+        if neighbor_ghost:
+
+            if len(neighbor_ghost) > 1 and last_pos_ghost in neighbor_ghost:
+                neighbor_ghost.remove(last_pos_ghost)
+
+            if len(neighbor_ghost) > 1 and route[1] in neighbor_ghost:
+                neighbor_ghost.remove(route[1])
+            return random.choice(neighbor_ghost)
+
+        return cell_ghost
+    return pos_ghost

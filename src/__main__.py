@@ -1,4 +1,4 @@
-from src.algorithm import bfs, preshoot, move_randomly, unpredictable
+from src.algorithm import bfs, preshoot, move_randomly, unpredictable, to_flee
 from src.game import GameState, Player
 from src.ghost import Ghost
 from src.maze import draw_maze, setup_terminal
@@ -75,6 +75,13 @@ def run(
         "Dartagnan": None,
     }
 
+    last_positions: dict[str, tuple[int, int] | None] = {
+        "Athos": None,
+        "Porthos": None,
+        "Aramis": None,
+        "Dartagnan": None,
+    }
+
     while True:
         key: int = stdscr.getch()
 
@@ -86,76 +93,88 @@ def run(
             player,
             key,
         )
-
         for ghost in ghosts:
-            if ghost.name == "Athos":
-                start: tuple[int, int] = (ghost.y, ghost.x)
-                target: tuple[int, int] = (player.y, player.x)
+            start: tuple[int, int] = (ghost.y, ghost.x)
+            target: tuple[int, int] = (player.y, player.x)
 
-                if start == target:
-                    ghosts.remove(ghost)
-                    continue
+            # if start == target:
+            #     ghosts.remove(ghost)
+            #     continue
 
-                route: list[tuple[int, int]] = bfs(
-                    start,
-                    target,
-                    maze,
-                )
+            route: tuple[int, int] = to_flee(start, target,
+                                             last_positions[ghost.name], maze)
+            last_positions[ghost.name] = start
+            ghost.move_to_position(route)
 
-                if len(route) > 1:
-                    ghost.move_to_position(route[1])
+        # for ghost in ghosts:
+        #     if ghost.name == "Athos":
+        #         start: tuple[int, int] = (ghost.y, ghost.x)
+        #         target: tuple[int, int] = (player.y, player.x)
 
-            elif ghost.name == "Porthos":
+        #         if start == target:
+        #             ghosts.remove(ghost)
+        #             continue
 
-                start = (ghost.y, ghost.x)
-                position_player: tuple[int, int] = (player.y, player.x)
-                if start == position_player:
-                    ghosts.remove(ghost)
-                    continue
+        #         route: list[tuple[int, int]] = bfs(
+        #             start,
+        #             target,
+        #             maze,
+        #         )
 
-                target = preshoot(position_player, maze)
+        #         if len(route) > 1:
+        #             ghost.move_to_position(route[1])
 
-                route = bfs(
-                    start,
-                    target,
-                    maze,
-                )
-                if len(route) > 1:
-                    ghost.move_to_position(route[1])
+        #     elif ghost.name == "Porthos":
 
-            elif ghost.name == "Dartagnan":
-                start = (ghost.y, ghost.x)
-                position_player = (player.y, player.x)
+        #         start = (ghost.y, ghost.x)
+        #         position_player: tuple[int, int] = (player.y, player.x)
+        #         if start == position_player:
+        #             ghosts.remove(ghost)
+        #             continue
 
-                if start == position_player:
-                    ghosts.remove(ghost)
-                    continue
-                way: tuple[int, int] = unpredictable(
-                     start, position_player, maze)
+        #         target = preshoot(position_player, maze)
 
-                if len(route) > 1:
-                    ghost.move_to_position(way)
+        #         route = bfs(
+        #             start,
+        #             target,
+        #             maze,
+        #         )
+        #         if len(route) > 1:
+        #             ghost.move_to_position(route[1])
 
-            else:
-                start = (ghost.y, ghost.x)
-                position_player = (player.y, player.x)
-                if start == position_player:
-                    ghosts.remove(ghost)
-                    continue
+        #     elif ghost.name == "Dartagnan":
+        #         start = (ghost.y, ghost.x)
+        #         position_player = (player.y, player.x)
 
-                path: dict[str, int] | None = ghost.check_path(maze)
+        #         if start == position_player:
+        #             ghosts.remove(ghost)
+        #             continue
+        #         way: tuple[int, int] = unpredictable(
+        #              start, position_player, maze)
 
-                if path is None:
-                    continue
+        #         if len(route) > 1:
+        #             ghost.move_to_position(way)
 
-                direction: str | None = move_randomly(
-                    path,
-                    last_paths[ghost.name],
-                )
+            # else:
+            #     start = (ghost.y, ghost.x)
+            #     position_player = (player.y, player.x)
+            #     if start == position_player:
+            #         ghosts.remove(ghost)
+            #         continue
 
-                if direction is not None:
-                    ghost.move_to_direction(direction)
-                    last_paths[ghost.name] = direction
+            #     path: dict[str, int] | None = ghost.check_path(maze)
+
+            #     if path is None:
+            #         continue
+
+            #     direction: str | None = move_randomly(
+            #         path,
+            #         last_paths[ghost.name],
+            #     )
+
+            #     if direction is not None:
+            #         ghost.move_to_direction(direction)
+            #         last_paths[ghost.name] = direction
 
         draw_maze(
             stdscr,
@@ -198,10 +217,10 @@ def main() -> None:
     )
 
     ghosts: list[Ghost] = [
-        Ghost(0, 0, (0, 0), "Athos"),
-        Ghost(19, 0, (19, 0), "Porthos"),
-        Ghost(0, 19, (0, 19), "Aramis"),
-        Ghost(19, 19, (19, 19), "Dartagnan"),
+        Ghost(9, 7, (9, 7), "Athos"),
+        Ghost(11, 8, (11, 8), "Porthos"),
+        Ghost(9, 11, (9, 11), "Aramis"),
+        Ghost(7, 8, (7, 8), "Dartagnan"),
     ]
 
     curses.wrapper(
