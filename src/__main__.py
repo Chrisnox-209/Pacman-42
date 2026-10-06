@@ -1,7 +1,13 @@
-from src.algorithm import bfs, preshoot, move_randomly, unpredictable, to_flee
+from src.algorithm import (
+    bfs,
+    move_randomly,
+    preshoot,
+    to_flee,
+    unpredictable,
+)
 from src.game import GameState, Player
 from src.ghost import Ghost
-from src.maze import draw_maze, setup_terminal
+from src.ui import GameWindow, draw_maze, setup_terminal, wrapper
 from mazegenerator import MazeGenerator
 import curses
 import time
@@ -60,7 +66,7 @@ def move_player(
 
 
 def run(
-    stdscr: curses.window,
+    stdscr: GameWindow,
     maze: list[list[int]],
     player: Player,
     ghosts: list[Ghost],
@@ -82,8 +88,6 @@ def run(
         "Dartagnan": None,
     }
 
-    pacgum: bool = False
-
     while True:
         key: int = stdscr.getch()
 
@@ -96,35 +100,51 @@ def run(
             key,
         )
 
-        if pacgum:
-            for ghost in ghosts:
-                start: tuple[int, int] = (ghost.y, ghost.x)
-                target: tuple[int, int] = (player.y, player.x)
+        if game_state.frightened:
+            for ghost in ghosts[:]:
+                start: tuple[int, int] = (
+                    ghost.y,
+                    ghost.x,
+                )
+                target: tuple[int, int] = (
+                    player.y,
+                    player.x,
+                )
 
                 if start == target:
                     ghosts.remove(ghost)
                     continue
 
-                route: tuple[int, int] = to_flee(start,
-                                                 target,
-                                                 last_positions[ghost.name],
-                                                 maze)
+                next_pos: tuple[int, int] = to_flee(
+                    start,
+                    target,
+                    last_positions[ghost.name],
+                    maze,
+                )
 
                 last_positions[ghost.name] = start
-                ghost.move_to_position(route)
+                ghost.move_to_position(next_pos)
+
         else:
-            for ghost in ghosts:
+            for ghost in ghosts[:]:
+                start: tuple[int, int] = (
+                    ghost.y,
+                    ghost.x,
+                )
+
+                position_player: tuple[int, int] = (
+                    player.y,
+                    player.x,
+                )
+
+                if start == position_player:
+                    ghosts.remove(ghost)
+                    continue
+
                 if ghost.name == "Athos":
-                    start = (ghost.y, ghost.x)
-                    target = (player.y, player.x)
-
-                    if start == target:
-                        ghosts.remove(ghost)
-                        continue
-
                     road: list[tuple[int, int]] = bfs(
                         start,
-                        target,
+                        position_player,
                         maze,
                     )
 
@@ -132,44 +152,33 @@ def run(
                         ghost.move_to_position(road[1])
 
                 elif ghost.name == "Porthos":
-
-                    start = (ghost.y, ghost.x)
-                    position_player: tuple[int, int] = (player.y, player.x)
-                    if start == position_player:
-                        ghosts.remove(ghost)
-                        continue
-
-                    target = preshoot(position_player, maze)
+                    target = preshoot(
+                        position_player,
+                        maze,
+                    )
 
                     road = bfs(
                         start,
                         target,
                         maze,
                     )
+
                     if len(road) > 1:
                         ghost.move_to_position(road[1])
 
                 elif ghost.name == "Dartagnan":
-                    start = (ghost.y, ghost.x)
-                    position_player = (player.y, player.x)
+                    next_pos = unpredictable(
+                        start,
+                        position_player,
+                        maze,
+                    )
 
-                    if start == position_player:
-                        ghosts.remove(ghost)
-                        continue
-                    way: tuple[int, int] = unpredictable(
-                         start, position_player, maze)
-
-                    if len(road) > 1:
-                        ghost.move_to_position(way)
+                    ghost.move_to_position(next_pos)
 
                 else:
-                    start = (ghost.y, ghost.x)
-                    position_player = (player.y, player.x)
-                    if start == position_player:
-                        ghosts.remove(ghost)
-                        continue
-
-                    path: dict[str, int] | None = ghost.check_path(maze)
+                    path: dict[str, int] | None = (
+                        ghost.check_path(maze)
+                    )
 
                     if path is None:
                         continue
@@ -202,6 +211,7 @@ def main() -> None:
     )
 
     maze: list[list[int]] = generator.maze
+
     player_x: int
     player_y: int
     player_x, player_y = find_player_spawn(maze)
@@ -222,16 +232,23 @@ def main() -> None:
         game_over=False,
         cheat=False,
     )
+
     height: int = len(maze) - 1
     width: int = len(maze[0]) - 1
+
     ghosts: list[Ghost] = [
         Ghost(0, 0, (0, 0), "Athos"),
         Ghost(width, 0, (width, 0), "Porthos"),
         Ghost(0, height, (0, height), "Aramis"),
-        Ghost(width, height, (width, height), "Dartagnan"),
+        Ghost(
+            width,
+            height,
+            (width, height),
+            "Dartagnan",
+        ),
     ]
 
-    curses.wrapper(
+    wrapper(
         run,
         maze,
         player,
