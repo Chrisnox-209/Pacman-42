@@ -387,7 +387,8 @@ def draw_maze(
         window.mouth_open = not window.mouth_open
     window.last_player_position = position
     window.screen.fill(BACKGROUND_COLOR)
-    draw_game(window.screen, window.fonts, window.images, maze, player, game_state, window.mouth_open)
+    draw_game(window.screen, window.fonts, window.images, maze, player,
+              game_state, window.mouth_open)
     pygame.display.flip()
 
 

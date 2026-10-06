@@ -250,8 +250,10 @@ def draw_game_screen(
     mouth_open: bool,
 ) -> None:
     """Dessine l'écran de jeu vide avec son HUD et Pac-Man."""
-    draw_hud(screen, label_font, value_font, score, lives, level, remaining_time)
-    draw_pacman(screen, open_image, closed_image, position, direction, mouth_open)
+    draw_hud(screen, label_font, value_font, score, lives, level,
+             remaining_time)
+    draw_pacman(screen, open_image, closed_image, position, direction,
+                mouth_open)
 
 
 def draw_current_screen(
@@ -280,10 +282,12 @@ def draw_current_screen(
              "Press ESC to return to the menu."),
         )
     else:
-        score, lives, level, remaining_time, position, direction, mouth_open = game_data
+        (score, lives, level, remaining_time, position, direction, mouth_open
+         ) = game_data
         draw_game_screen(
             screen, label_font, value_font, open_image, closed_image,
-            score, lives, level, remaining_time, position, direction, mouth_open,
+            score, lives, level, remaining_time, position, direction,
+            mouth_open,
         )
 
 
@@ -325,7 +329,8 @@ def main() -> None:
 
         screen.fill(BACKGROUND_COLOR)
         if current_screen == "game":
-            pacman_position, direction, mouth_open, animation_time = update_pacman(
+            (pacman_position, direction, mouth_open, animation_time
+             ) = update_pacman(
                 pygame.key.get_pressed(), delta_time, pacman_position,
                 direction, mouth_open, animation_time, game_bounds,
             )
