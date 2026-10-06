@@ -49,9 +49,17 @@ PacmanImages = tuple[pygame.Surface, pygame.Surface]
 
 def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     """Create the window and load the fonts and Pac-Man images."""
+    global WINDOW_WIDTH, WINDOW_HEIGHT
+
+    screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
+
+    WINDOW_WIDTH = int(screen_width * 0.85)
+    WINDOW_HEIGHT = int(screen_height * 0.85)
+
     pygame.key.set_repeat(180, 100)
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption(WINDOW_TITLE)
+
     fonts = {
         "title": pygame.font.Font(None, 72),
         "menu": pygame.font.Font(None, 34),
@@ -59,6 +67,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
         "hud_label": pygame.font.Font(None, 24),
         "hud_value": pygame.font.Font(None, 34),
     }
+
     return screen, fonts, load_pacman_images()
 
 
