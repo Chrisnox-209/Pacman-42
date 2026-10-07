@@ -123,7 +123,7 @@ def run(
         "Dartagnan": None,
     }
 
-    while True:
+    while not game_state.game_over:
         key: int = stdscr.getch()
 
         if key in (ord("q"), ord("Q")):

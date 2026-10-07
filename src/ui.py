@@ -6,7 +6,7 @@ from typing import Callable
 import curses
 import pygame
 
-from src.game import GameState, Player
+from src.game import GameState, Player, create_game
 from src.ghost import Ghost
 
 
@@ -418,12 +418,12 @@ def draw_screen(
             "PAUSED",
             ("ENTER: resume", "ESC: return to menu"),
         )
-    else:
+    elif current_screen == "game_over":
         draw_message(
             screen,
             fonts,
             "GAME OVER",
-            ("Press ENTER to return to the menu.",),
+            (f"Final score: {game_state.score}",),
         )
 
 
@@ -571,6 +571,12 @@ def wrapper(
                 if event.type == pygame.QUIT:
                     window.closed = True
                 elif event.type == pygame.KEYDOWN:
+                    if current_screen == "game_over" and event.key in (
+                        pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_ESCAPE
+                    ):
+                        maze, player, ghosts, game_state = create_game()
+                        window.last_player_position = None
+                        window.mouth_open = True
                     running, current_screen, selected_option = handle_key(
                         event.key,
                         current_screen,
@@ -588,7 +594,10 @@ def wrapper(
                     ghosts,
                     game_state,
                 )
-                break
+                if window.closed:
+                    break
+                current_screen = "game_over"
+                continue
 
             draw_screen(
                 window.screen,
