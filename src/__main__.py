@@ -101,7 +101,7 @@ def run(
         )
 
         if game_state.frightened:
-            for ghost in ghosts[:]:
+            for ghost in ghosts:
                 start: tuple[int, int] = (
                     ghost.y,
                     ghost.x,
@@ -126,7 +126,7 @@ def run(
                 ghost.move_to_position(next_pos)
 
         else:
-            for ghost in ghosts[:]:
+            for ghost in ghosts:
                 start = (
                     ghost.y,
                     ghost.x,
