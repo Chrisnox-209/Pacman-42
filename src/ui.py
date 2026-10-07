@@ -52,15 +52,11 @@ PacmanImages = tuple[pygame.Surface, pygame.Surface]
 
 def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     """Create the window and load the fonts and Pac-Man images."""
-    global WINDOW_WIDTH, WINDOW_HEIGHT
-
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
-
-    WINDOW_WIDTH = int(screen_width * 0.85)
-    WINDOW_HEIGHT = int(screen_height * 0.85)
+    window_size = (int(screen_width * 0.85), int(screen_height * 0.85))
 
     pygame.key.set_repeat(180, 100)
-    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    screen = pygame.display.set_mode(window_size)
     pygame.display.set_caption(WINDOW_TITLE)
 
     fonts: FontSet = {
@@ -435,10 +431,21 @@ class GameWindow:
     """Provide the input method expected by the original game loop."""
 
     def __init__(self) -> None:
-        self.screen, self.fonts, self.images = create_display()
+        self.display, self.fonts, self.images = create_display()
+        self.screen = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT)).convert()
+        self.display_rect = self.screen.get_rect().fit(self.display.get_rect())
         self.closed = False
         self.mouth_open = True
         self.last_player_position: tuple[int, int] | None = None
+
+    def refresh(self) -> None:
+        """Scale the whole interface to the window and display it."""
+        self.display.fill(BACKGROUND_COLOR)
+        image = pygame.transform.smoothscale(
+            self.screen, self.display_rect.size
+        )
+        self.display.blit(image, self.display_rect)
+        pygame.display.flip()
 
     def getch(self) -> int:
         """Translate Pygame input into the original terminal key codes."""
@@ -478,7 +485,7 @@ class GameWindow:
                 "PAUSED",
                 ("ENTER or ESC: resume", "Q: quit"),
             )
-            pygame.display.flip()
+            self.refresh()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -530,7 +537,7 @@ def draw_maze(
         game_state,
         window.mouth_open,
     )
-    pygame.display.flip()
+    window.refresh()
 
 
 def wrapper(
@@ -595,7 +602,7 @@ def wrapper(
                 game_state,
                 window.mouth_open,
             )
-            pygame.display.flip()
+            window.refresh()
             clock.tick(60)
 
     finally:
