@@ -1,4 +1,12 @@
+from src.algorithm import (
+    bfs,
+    move_randomly,
+    preshoot,
+    to_flee,
+    unpredictable,
+)
 from src.game import GameState, Player
+from src.ghost import Ghost
 from src.ui import GameWindow, draw_maze, setup_terminal, wrapper
 from mazegenerator import MazeGenerator
 import curses
@@ -61,9 +69,24 @@ def run(
     stdscr: GameWindow,
     maze: list[list[int]],
     player: Player,
+    ghosts: list[Ghost],
     game_state: GameState,
 ) -> None:
     setup_terminal(stdscr)
+
+    last_paths: dict[str, str | None] = {
+        "Athos": None,
+        "Porthos": None,
+        "Aramis": None,
+        "Dartagnan": None,
+    }
+
+    last_positions: dict[str, tuple[int, int] | None] = {
+        "Athos": None,
+        "Porthos": None,
+        "Aramis": None,
+        "Dartagnan": None,
+    }
 
     while True:
         key: int = stdscr.getch()
@@ -77,10 +100,103 @@ def run(
             key,
         )
 
+        if game_state.frightened:
+            for ghost in ghosts:
+                start: tuple[int, int] = (
+                    ghost.y,
+                    ghost.x,
+                )
+                target: tuple[int, int] = (
+                    player.y,
+                    player.x,
+                )
+
+                if start == target:
+                    ghosts.remove(ghost)
+                    continue
+
+                next_pos: tuple[int, int] = to_flee(
+                    start,
+                    target,
+                    last_positions[ghost.name],
+                    maze,
+                )
+
+                last_positions[ghost.name] = start
+                ghost.move_to_position(next_pos)
+
+        else:
+            for ghost in ghosts:
+                start = (
+                    ghost.y,
+                    ghost.x,
+                )
+
+                position_player: tuple[int, int] = (
+                    player.y,
+                    player.x,
+                )
+
+                if start == position_player:
+                    ghosts.remove(ghost)
+                    continue
+
+                if ghost.name == "Athos":
+                    road: list[tuple[int, int]] = bfs(
+                        start,
+                        position_player,
+                        maze,
+                    )
+
+                    if len(road) > 1:
+                        ghost.move_to_position(road[1])
+
+                elif ghost.name == "Porthos":
+                    target = preshoot(
+                        position_player,
+                        maze,
+                    )
+
+                    road = bfs(
+                        start,
+                        target,
+                        maze,
+                    )
+
+                    if len(road) > 1:
+                        ghost.move_to_position(road[1])
+
+                elif ghost.name == "Dartagnan":
+                    next_pos = unpredictable(
+                        start,
+                        position_player,
+                        maze,
+                    )
+
+                    ghost.move_to_position(next_pos)
+
+                else:
+                    path: dict[str, int] | None = (
+                        ghost.check_path(maze)
+                    )
+
+                    if path is None:
+                        continue
+
+                    direction: str | None = move_randomly(
+                        path,
+                        last_paths[ghost.name],
+                    )
+
+                    if direction is not None:
+                        ghost.move_to_direction(direction)
+                        last_paths[ghost.name] = direction
+
         draw_maze(
             stdscr,
             maze,
             player,
+            ghosts,
             game_state,
         )
 
@@ -95,6 +211,7 @@ def main() -> None:
     )
 
     maze: list[list[int]] = generator.maze
+
     player_x: int
     player_y: int
     player_x, player_y = find_player_spawn(maze)
@@ -116,10 +233,26 @@ def main() -> None:
         cheat=False,
     )
 
+    height: int = len(maze) - 1
+    width: int = len(maze[0]) - 1
+
+    ghosts: list[Ghost] = [
+        Ghost(0, 0, (0, 0), "Athos"),
+        Ghost(width, 0, (width, 0), "Porthos"),
+        Ghost(0, height, (0, height), "Aramis"),
+        Ghost(
+            width,
+            height,
+            (width, height),
+            "Dartagnan",
+        ),
+    ]
+
     wrapper(
         run,
         maze,
         player,
+        ghosts,
         game_state,
     )
 
