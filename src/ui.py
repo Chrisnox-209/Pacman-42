@@ -15,7 +15,8 @@ WINDOW_HEIGHT = 600
 WINDOW_TITLE = "Pac-Man"
 HUD_HEIGHT = 86
 TILE_SIZE = 24
-PACMAN_SIZE = (20, 20)
+PACMAN_SIZE = (30, 30)
+PACMAN_SEQUENCE = (0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0)
 
 BACKGROUND_COLOR = (8, 12, 38)
 HUD_BACKGROUND_COLOR = (15, 22, 58)
@@ -40,14 +41,13 @@ GHOST_COLORS: dict[str, tuple[int, int, int]] = {
     "Dartagnan": (255, 170, 50),
 }
 
-PACMAN_IMAGE = Path(__file__).parent.parent / "assets" / "pacman.png"
-PACMAN_CLOSED_IMAGE = (
-    Path(__file__).parent.parent / "assets" / "pacman_closed.png"
+PACMAN_FOLDER = (
+    Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
 )
 
 ROTATION_ANGLES = {"left": 0, "down": 90, "right": 180, "up": 270}
 FontSet = dict[str, pygame.font.Font]
-PacmanImages = tuple[pygame.Surface, pygame.Surface]
+PacmanImages = list[pygame.Surface]
 
 
 def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
@@ -71,13 +71,13 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
 
 
 def load_pacman_images() -> PacmanImages:
-    """Load and resize the open- and closed-mouth Pac-Man images."""
-    open_image = pygame.image.load(PACMAN_IMAGE).convert_alpha()
-    closed_image = pygame.image.load(PACMAN_CLOSED_IMAGE).convert_alpha()
-    return (
-        pygame.transform.smoothscale(open_image, PACMAN_SIZE),
-        pygame.transform.smoothscale(closed_image, PACMAN_SIZE),
-    )
+    """Load the eight mouth animation frames once at startup."""
+    images = []
+    for number in range(8):
+        path = PACMAN_FOLDER / f"frame_{number:02d}.png"
+        image = pygame.image.load(path).convert_alpha()
+        images.append(pygame.transform.smoothscale(image, PACMAN_SIZE))
+    return images
 
 
 def handle_key(
@@ -234,10 +234,10 @@ def draw_player(
     images: PacmanImages,
     player: Player,
     maze_origin: tuple[int, int],
-    mouth_open: bool,
+    animation_frame: int,
 ) -> None:
     """Draw the player sprite at its current maze cell."""
-    image = images[0] if mouth_open else images[1]
+    image = images[animation_frame]
     facing = get_player_facing(player.direction)
     rotated_image = pygame.transform.rotate(
         image,
@@ -276,13 +276,13 @@ def draw_game(
     player: Player,
     ghosts: list[Ghost],
     game_state: GameState,
-    mouth_open: bool,
+    animation_frame: int,
 ) -> None:
     """Draw the HUD, maze, player, and ghosts for one frame."""
     maze_origin = get_maze_origin(maze)
     draw_hud(screen, fonts, game_state, player)
     draw_maze_grid(screen, maze, maze_origin)
-    draw_player(screen, images, player, maze_origin, mouth_open)
+    draw_player(screen, images, player, maze_origin, animation_frame)
     draw_ghosts(screen, ghosts, maze_origin)
 
 
@@ -376,7 +376,7 @@ def draw_screen(
     player: Player,
     ghosts: list[Ghost],
     game_state: GameState,
-    mouth_open: bool,
+    animation_frame: int,
 ) -> None:
     """Clear the window and draw the active screen."""
     screen.fill(BACKGROUND_COLOR)
@@ -392,7 +392,7 @@ def draw_screen(
             player,
             ghosts,
             game_state,
-            mouth_open,
+            animation_frame,
         )
     elif current_screen == "instructions":
         draw_message(
@@ -435,7 +435,8 @@ class GameWindow:
         self.screen = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT)).convert()
         self.display_rect = self.screen.get_rect().fit(self.display.get_rect())
         self.closed = False
-        self.mouth_open = True
+        self.animation_frame = 0
+        self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
 
     def refresh(self) -> None:
@@ -456,7 +457,8 @@ class GameWindow:
             pygame.K_LEFT: curses.KEY_LEFT,
         }
 
-        key = -1
+        key = self.pending_key
+        self.pending_key = -1
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -515,29 +517,36 @@ def draw_maze(
     ghosts: list[Ghost],
     game_state: GameState,
 ) -> None:
-    """Display the game with the signature used by the main run loop."""
+    """Animate the display during the 300 ms between game updates."""
     position = (player.x, player.y)
-
-    if (
+    moving = (
         window.last_player_position is not None
         and position != window.last_player_position
-    ):
-        window.mouth_open = not window.mouth_open
-
-    window.last_player_position = position
-    window.screen.fill(BACKGROUND_COLOR)
-
-    draw_game(
-        window.screen,
-        window.fonts,
-        window.images,
-        maze,
-        player,
-        ghosts,
-        game_state,
-        window.mouth_open,
     )
-    window.refresh()
+    window.last_player_position = position
+    clock = pygame.time.Clock()
+    start = pygame.time.get_ticks()
+
+    while not window.closed:
+        window.pending_key = window.getch()
+        elapsed = pygame.time.get_ticks() - start
+        if window.closed or elapsed >= 300:
+            break
+
+        window.animation_frame = PACMAN_SEQUENCE[elapsed // 20] if moving else 0
+        window.screen.fill(BACKGROUND_COLOR)
+        draw_game(
+            window.screen,
+            window.fonts,
+            window.images,
+            maze,
+            player,
+            ghosts,
+            game_state,
+            window.animation_frame,
+        )
+        window.refresh()
+        clock.tick(60)
 
 
 def wrapper(
@@ -576,7 +585,8 @@ def wrapper(
                     ):
                         maze, player, ghosts, game_state = create_game()
                         window.last_player_position = None
-                        window.mouth_open = True
+                        window.animation_frame = 0
+                        window.pending_key = -1
                     running, current_screen, selected_option = handle_key(
                         event.key,
                         current_screen,
@@ -609,7 +619,7 @@ def wrapper(
                 player,
                 ghosts,
                 game_state,
-                window.mouth_open,
+                window.animation_frame,
             )
             window.refresh()
             clock.tick(60)

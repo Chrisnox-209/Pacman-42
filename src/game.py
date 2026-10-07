@@ -1,7 +1,6 @@
 """Game objects, initialization, and gameplay loop."""
 
 import curses
-import time
 from typing import TYPE_CHECKING
 
 from mazegenerator import MazeGenerator
@@ -234,8 +233,6 @@ def run(
             ghosts,
             game_state,
         )
-
-        time.sleep(0.3)
 
 
 def create_game() -> tuple[list[list[int]], Player, list[Ghost], GameState]:
