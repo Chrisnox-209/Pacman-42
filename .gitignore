@@ -1,4 +1,4 @@
 *.pdf
-*.whl
-__pycache__/
 *.lock
+__pycache__/
+src/__pycache__/
