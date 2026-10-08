@@ -34,12 +34,7 @@ WEST = 8
 
 MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
-GHOST_COLORS: dict[str, tuple[int, int, int]] = {
-    "Athos": (255, 70, 70),
-    "Porthos": (255, 145, 210),
-    "Aramis": (80, 230, 255),
-    "Dartagnan": (255, 170, 50),
-}
+GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
 
 PACMAN_FOLDER = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
@@ -67,6 +62,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
         "hud_value": pygame.font.Font(None, 34),
     }
 
+    load_ghost_images()
     return screen, fonts, load_pacman_images()
 
 
@@ -78,6 +74,18 @@ def load_pacman_images() -> PacmanImages:
         image = pygame.image.load(path).convert_alpha()
         images.append(pygame.transform.smoothscale(image, PACMAN_SIZE))
     return images
+
+
+def load_ghost_images() -> None:
+    """Load normal and frightened ghost textures once at startup."""
+    for name in ("Athos", "Porthos", "Aramis", "Dartagnan"):
+        folder = PACMAN_FOLDER.parent / "ghosts" / name.lower()
+        GHOST_IMAGES[name] = {}
+        for state in ("normal", "frightened"):
+            image = pygame.image.load(folder / f"{state}.png").convert_alpha()
+            GHOST_IMAGES[name][state] = pygame.transform.smoothscale(
+                image, (TILE_SIZE, TILE_SIZE)
+            )
 
 
 def handle_key(
@@ -253,19 +261,16 @@ def draw_ghosts(
     screen: pygame.Surface,
     ghosts: list[Ghost],
     maze_origin: tuple[int, int],
+    frightened: bool,
 ) -> None:
-    """Draw all ghosts at their current maze cells."""
+    """Draw the ghost texture matching the current frightened mode."""
+    state = "frightened" if frightened else "normal"
     for ghost in ghosts:
-        color = GHOST_COLORS.get(
-            ghost.name,
-            (255, 255, 255),
+        image = GHOST_IMAGES[ghost.name][state]
+        rect = image.get_rect(
+            center=cell_center(ghost.x, ghost.y, maze_origin)
         )
-        pygame.draw.circle(
-            screen,
-            color,
-            cell_center(ghost.x, ghost.y, maze_origin),
-            8,
-        )
+        screen.blit(image, rect)
 
 
 def draw_game(
@@ -283,7 +288,7 @@ def draw_game(
     draw_hud(screen, fonts, game_state, player)
     draw_maze_grid(screen, maze, maze_origin)
     draw_player(screen, images, player, maze_origin, animation_frame)
-    draw_ghosts(screen, ghosts, maze_origin)
+    draw_ghosts(screen, ghosts, maze_origin, game_state.frightened)
 
 
 def draw_menu(
