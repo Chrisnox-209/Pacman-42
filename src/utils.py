@@ -1,6 +1,4 @@
-import json
 from enum import Enum
-from typing import Any
 
 
 class Color(Enum):
@@ -16,18 +14,6 @@ class Color(Enum):
     MAGENTA = "\033[95m"
     CYAN = "\033[96m"
     RST = "\033[0m"
-
-
-def check_config(file_config: str) -> Any:
-    try:
-        with open(file_config, "r", encoding="utf-8") as content:
-            return json.load(content)
-    except FileNotFoundError:
-        raise ValueError(f'The file "{Color.YELLOW.value}{file_config}'
-                         f'{Color.RST.value}" could not be found.')
-    except json.JSONDecodeError:
-        raise ValueError(f'The file "{Color.YELLOW.value}{file_config}'
-                         f'"{Color.RST.value}" is not valid JSON.')
 
 
 def convert_wall(nb: int) -> dict[str, int] | None:

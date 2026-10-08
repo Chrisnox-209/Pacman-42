@@ -154,8 +154,15 @@ class ParseConfig(BaseModel):
 def json_to_data(file: str) -> ParseConfig:
     try:
         with open(file, "r", encoding="utf-8") as content:
-            json_data: object = json.load(content)
+            json_content: str = ""
+
+            for line in content:
+                if not line.lstrip().startswith("#"):
+                    json_content = json_content + line
+
+            json_data: object = json.loads(json_content)
             return ParseConfig.model_validate(json_data)
+
     except FileNotFoundError:
         raise ValueError(f'The file "{Color.YELLOW.value}{file}'
                          f'{Color.RST.value}" could not be found.')
