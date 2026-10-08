@@ -13,6 +13,7 @@ from src.ghost import Ghost
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 WINDOW_TITLE = "Pac-Man"
+UI_SCALE = 1.0
 HUD_HEIGHT = 86
 TILE_SIZE = 24
 PACMAN_SIZE = (30, 30)
@@ -45,21 +46,33 @@ FontSet = dict[str, pygame.font.Font]
 PacmanImages = list[pygame.Surface]
 
 
+def scaled(value: int) -> int:
+    """Convert a reference size to pixels for the current window."""
+    return max(1, round(value * UI_SCALE))
+
+
 def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
-    """Create the window and load the fonts and Pac-Man images."""
+    """Create the window and prepare graphics at their final size."""
+    global WINDOW_WIDTH, WINDOW_HEIGHT, UI_SCALE
+    global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
     window_size = (int(screen_width * 0.85), int(screen_height * 0.85))
 
     pygame.key.set_repeat(180, 100)
     screen = pygame.display.set_mode(window_size)
     pygame.display.set_caption(WINDOW_TITLE)
+    WINDOW_WIDTH, WINDOW_HEIGHT = screen.get_size()
+    UI_SCALE = min(WINDOW_WIDTH / 800, WINDOW_HEIGHT / 600)
+    HUD_HEIGHT = scaled(86)
+    TILE_SIZE = scaled(24)
+    PACMAN_SIZE = (scaled(30), scaled(30))
 
     fonts: FontSet = {
-        "title": pygame.font.Font(None, 72),
-        "menu": pygame.font.Font(None, 34),
-        "info": pygame.font.Font(None, 30),
-        "hud_label": pygame.font.Font(None, 24),
-        "hud_value": pygame.font.Font(None, 34),
+        "title": pygame.font.Font(None, scaled(72)),
+        "menu": pygame.font.Font(None, scaled(34)),
+        "info": pygame.font.Font(None, scaled(30)),
+        "hud_label": pygame.font.Font(None, scaled(24)),
+        "hud_value": pygame.font.Font(None, scaled(34)),
     }
 
     load_ghost_images()
@@ -164,19 +177,19 @@ def draw_maze_grid(
 
             if walls & NORTH:
                 pygame.draw.line(
-                    screen, WALL_COLOR, (left, top), (right, top), 3
+                    screen, WALL_COLOR, (left, top), (right, top), scaled(3)
                 )
             if walls & EAST:
                 pygame.draw.line(
-                    screen, WALL_COLOR, (right, top), (right, bottom), 3
+                    screen, WALL_COLOR, (right, top), (right, bottom), scaled(3)
                 )
             if walls & SOUTH:
                 pygame.draw.line(
-                    screen, WALL_COLOR, (left, bottom), (right, bottom), 3
+                    screen, WALL_COLOR, (left, bottom), (right, bottom), scaled(3)
                 )
             if walls & WEST:
                 pygame.draw.line(
-                    screen, WALL_COLOR, (left, top), (left, bottom), 3
+                    screen, WALL_COLOR, (left, top), (left, bottom), scaled(3)
                 )
 
             if walls != 15:
@@ -184,7 +197,7 @@ def draw_maze_grid(
                     screen,
                     PELLET_COLOR,
                     cell_center(x, y, maze_origin),
-                    2,
+                    scaled(2),
                 )
 
 
@@ -205,7 +218,7 @@ def draw_hud(
         WALL_COLOR,
         (0, HUD_HEIGHT - 1),
         (WINDOW_WIDTH, HUD_HEIGHT - 1),
-        2,
+        scaled(2),
     )
 
     stats = (
@@ -218,11 +231,11 @@ def draw_hud(
     for label, value, x in stats:
         screen.blit(
             fonts["hud_label"].render(label, True, HUD_LABEL_COLOR),
-            (x, 15),
+            (WINDOW_WIDTH * x // 800, scaled(15)),
         )
         screen.blit(
             fonts["hud_value"].render(value, True, HUD_VALUE_COLOR),
-            (x, 42),
+            (WINDOW_WIDTH * x // 800, scaled(42)),
         )
 
 
@@ -304,7 +317,7 @@ def draw_menu(
     )
     screen.blit(
         title,
-        title.get_rect(center=(WINDOW_WIDTH // 2, 150)),
+        title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
     )
 
     for index, option in enumerate(MENU_OPTIONS):
@@ -315,7 +328,10 @@ def draw_menu(
         screen.blit(
             image,
             image.get_rect(
-                center=(WINDOW_WIDTH // 2, 270 + index * 55)
+                center=(
+                    WINDOW_WIDTH // 2,
+                    WINDOW_HEIGHT * (270 + index * 55) // 600,
+                )
             ),
         )
 
@@ -326,7 +342,7 @@ def draw_menu(
     )
     screen.blit(
         help_text,
-        help_text.get_rect(center=(WINDOW_WIDTH // 2, 530)),
+        help_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT * 530 // 600)),
     )
 
 
@@ -344,7 +360,7 @@ def draw_message(
     )
     screen.blit(
         title_image,
-        title_image.get_rect(center=(WINDOW_WIDTH // 2, 150)),
+        title_image.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
     )
 
     for index, line in enumerate(lines):
@@ -356,7 +372,10 @@ def draw_message(
         screen.blit(
             line_image,
             line_image.get_rect(
-                center=(WINDOW_WIDTH // 2, 270 + index * 48)
+                center=(
+                    WINDOW_WIDTH // 2,
+                    WINDOW_HEIGHT * (270 + index * 48) // 600,
+                )
             ),
         )
 
@@ -367,7 +386,7 @@ def draw_message(
     )
     screen.blit(
         footer,
-        footer.get_rect(center=(WINDOW_WIDTH // 2, 530)),
+        footer.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT * 530 // 600)),
     )
 
 
@@ -436,21 +455,14 @@ class GameWindow:
     """Provide the input method expected by the original game loop."""
 
     def __init__(self) -> None:
-        self.display, self.fonts, self.images = create_display()
-        self.screen = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT)).convert()
-        self.display_rect = self.screen.get_rect().fit(self.display.get_rect())
+        self.screen, self.fonts, self.images = create_display()
         self.closed = False
         self.animation_frame = 0
         self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
 
     def refresh(self) -> None:
-        """Scale the whole interface to the window and display it."""
-        self.display.fill(BACKGROUND_COLOR)
-        image = pygame.transform.smoothscale(
-            self.screen, self.display_rect.size
-        )
-        self.display.blit(image, self.display_rect)
+        """Display the frame directly, without resizing it."""
         pygame.display.flip()
 
     def getch(self) -> int:
