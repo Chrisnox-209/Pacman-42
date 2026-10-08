@@ -7,7 +7,7 @@ class Color(Enum):
     """
     Enum representing ANSI color escape codes for terminal formatting.
     """
-    BLUE = "\033[34m"
+    BLUE = "\033[1;34m"
     ORANGE = "\033[38;5;208m"
     RED = "\033[31m"
     WHITE = "\033[37m"
