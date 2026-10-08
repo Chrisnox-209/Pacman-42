@@ -9,6 +9,7 @@ dependencies = [
     "mazegenerator",
     "pygame",
     "mypy>=2.4.0",
+    "pydantic>=2.13.5",
 ]
 
 [project.scripts]
