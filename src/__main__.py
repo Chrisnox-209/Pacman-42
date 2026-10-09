@@ -48,7 +48,7 @@ def main(file_config: str) -> None:
               f"{Color.RST.value}", error,)
         sys.exit(1)
 
-    maze, player, ghosts, game_state = create_game()
+    maze, player, ghosts, game_state = create_game(config)
 
     wrapper(run, maze, player, ghosts,
             game_state, config, scores)

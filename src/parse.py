@@ -94,6 +94,7 @@ class ParseConfig(BaseModel):
     points_per_ghost: int
     seed: int
     level_max_time: int
+    perfect: bool
 
     @field_validator("highscore_filename")
     @classmethod

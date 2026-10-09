@@ -11,6 +11,7 @@ from src.algorithm import (
 )
 from src.ghost import Ghost
 from src.game import Player, GameState
+from src.parse import ParseConfig, LevelConfig
 
 if TYPE_CHECKING:
     from src.ui import GameWindow
@@ -211,12 +212,25 @@ def run(
         time.sleep(0.3)
 
 
-def create_game() -> tuple[list[list[int]], Player, list[Ghost], GameState]:
-    """Create the maze, player, ghosts, and initial game state."""
+def create_game(config: ParseConfig
+                ) -> tuple[list[list[int]], Player, list[Ghost], GameState]:
+
+    game_state = GameState(
+        score=0,
+        level=1,
+        remaining_time=90,
+        frightened=False,
+        game_over=False,
+        cheat=False,
+    )
+
+    level_index: int = game_state.level - 1
+    level: LevelConfig = config.levels[level_index]
+
     generator = MazeGenerator(
-        size=(20, 20),
-        perfect=False,
-        seed=42,
+        size=(level.width, level.width),
+        perfect=config.perfect,
+        seed=config.seed,
     )
 
     maze: list[list[int]] = generator.maze
@@ -231,15 +245,6 @@ def create_game() -> tuple[list[list[int]], Player, list[Ghost], GameState]:
         spawn_position=(player_x, player_y),
         direction=(1, 0),
         lives=3,
-    )
-
-    game_state = GameState(
-        score=0,
-        level=1,
-        remaining_time=90,
-        frightened=False,
-        game_over=False,
-        cheat=False,
     )
 
     height: int = len(maze) - 1

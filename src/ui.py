@@ -578,7 +578,7 @@ def wrapper(
                     if current_screen == "game_over" and event.key in (
                         pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_ESCAPE
                     ):
-                        maze, player, ghosts, game_state = create_game()
+                        maze, player, ghosts, game_state = create_game(config)
                         window.last_player_position = None
                         window.mouth_open = True
                     running, current_screen, selected_option = handle_key(
