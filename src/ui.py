@@ -6,8 +6,10 @@ from typing import Callable
 import curses
 import pygame
 
-from src.game import GameState, Player, create_game
+from src.parse import ParseConfig, ParseHighScore
+from src.game import GameState, Player
 from src.ghost import Ghost
+from src.interface import create_game
 
 
 WINDOW_WIDTH = 800
@@ -516,7 +518,7 @@ def draw_maze(
     game_state: GameState,
 ) -> None:
     """Display the game with the signature used by the main run loop."""
-    position = (player.x, player.y)
+    position: tuple[int, int] = (player.x, player.y)
 
     if (
         window.last_player_position is not None
@@ -555,6 +557,8 @@ def wrapper(
     player: Player,
     ghosts: list[Ghost],
     game_state: GameState,
+    config: ParseConfig,
+    scores: ParseHighScore
 ) -> None:
     """Show the menu, then call the game loop with Pygame I/O."""
     pygame.init()

@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from src.game import create_game, run, Player, GameState
+from src.interface import create_game, run
+from src.game import Player, GameState
 from src.ghost import Ghost
 from pydantic import ValidationError
 from src.ui import wrapper
@@ -49,7 +50,8 @@ def main(file_config: str) -> None:
 
     maze, player, ghosts, game_state = create_game()
 
-    wrapper(run, maze, player, ghosts, game_state)
+    wrapper(run, maze, player, ghosts,
+            game_state, config, scores)
 
 
 if __name__ == "__main__":
