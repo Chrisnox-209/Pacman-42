@@ -1,14 +1,18 @@
+from pathlib import Path
+
 from src.game import create_game, run, Player, GameState
 from src.ghost import Ghost
 from pydantic import ValidationError
 from src.ui import wrapper
 from src.utils import Color
 from src.parse import (ParseConfig,
-                       json_to_data)
+                       ParseHighScore,
+                       json_to_data,
+                       highscore_to_data)
 import sys
 
 
-def main(config: str) -> None:
+def main(file_config: str) -> None:
     maze: list[list[int]]
     player: Player
     ghosts: list[Ghost]
@@ -25,6 +29,21 @@ def main(config: str) -> None:
 
     except ValueError as error:
         print(f"{Color.RED.value}[ERROR CONFIG]"
+              f"{Color.RST.value}", error,)
+        sys.exit(1)
+
+    try:
+        file_score: Path = config.highscore_filename
+        scores: ParseHighScore = highscore_to_data(file_score)
+    except ValidationError as error:
+        print(f"\n{Color.RED.value}[ERROR FILE SCORE]"
+              f"{Color.ORANGE.value}",
+              error.errors()[0]["msg"],
+              f"{Color.RST.value}\n")
+        sys.exit(1)
+
+    except ValueError as error:
+        print(f"{Color.RED.value}[ERROR FILE SCORE]"
               f"{Color.RST.value}", error,)
         sys.exit(1)
 

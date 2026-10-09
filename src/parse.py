@@ -11,6 +11,47 @@ class ConfigPathError(Exception):
     pass
 
 
+class ParseScore(BaseModel):
+    name_player: str
+    score: int
+
+    @field_validator("name_player")
+    @classmethod
+    def check_player(cls, value: str) -> str:
+        if len(value) > 10 or len(value) < 1:
+            raise ValueError(f"\n{Color.BLUE.value}[INFO]"
+                             f"{Color.RST.value} The player's name is "
+                             "too long must be <= 10")
+        for c in value:
+            if not c.isalnum() and c != " ":
+                raise ValueError(f"\n{Color.BLUE.value}[INFO]"
+                                 f"{Color.RST.value} Player name error "
+                                 "(only alphanumeric characters and spaces "
+                                 "allowed)")
+        return value
+
+    @field_validator("score")
+    @classmethod
+    def check_score(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError(f"\n{Color.BLUE.value}[INFO]"
+                             f"{Color.RST.value} Score must be >= 0")
+        return value
+
+
+class ParseHighScore(BaseModel):
+    highscore: list[ParseScore]
+
+    @field_validator("highscore")
+    @classmethod
+    def check_highscores(cls, value: list[ParseScore]) -> list[ParseScore]:
+        if len(value) > 10:
+            raise ValueError(f"\n{Color.BLUE.value}[INFO]"
+                             f"{Color.RST.value} Exactly "
+                             "10 hightscores are required")
+        return value
+
+
 class LevelConfig(BaseModel):
     width: int
     height: int
@@ -25,7 +66,6 @@ class LevelConfig(BaseModel):
         if value > 40:
             raise ValueError(f"\n{Color.BLUE.value}[INFO]"
                              f"{Color.RST.value} Width must be <= 40")
-
         return value
 
     @field_validator("height")
@@ -38,7 +78,6 @@ class LevelConfig(BaseModel):
         if value > 20:
             raise ValueError(f"\n{Color.BLUE.value}[INFO]"
                              f"{Color.RST.value} Height must be <= 20")
-
         return value
 
 
@@ -94,10 +133,7 @@ class ParseConfig(BaseModel):
 
     @field_validator("levels")
     @classmethod
-    def check_levels(
-        cls,
-        value: list[LevelConfig],
-    ) -> list[LevelConfig]:
+    def check_levels(cls, value: list[LevelConfig]) -> list[LevelConfig]:
         if len(value) != 10:
             raise ValueError(f"\n{Color.BLUE.value}[INFO]"
                              f"{Color.RST.value} Exactly "
@@ -154,6 +190,22 @@ def json_to_data(file: str) -> ParseConfig:
     except FileNotFoundError:
         raise ValueError(f'The file "{Color.YELLOW.value}{file}'
                          f'{Color.RST.value}" could not be found.')
+
+    except json.JSONDecodeError:
+        raise ValueError(f'The file "{Color.YELLOW.value}{file}'
+                         f'"{Color.RST.value}" is not valid JSON.')
+
+
+def highscore_to_data(file: Path) -> ParseHighScore:
+    try:
+        with open(file, "r", encoding="utf8") as content:
+            score_data: object = json.load(content)
+            return ParseHighScore.model_validate(score_data)
+
+    except FileNotFoundError:
+        raise ValueError(f'The file "{Color.YELLOW.value}{file}'
+                         f'{Color.RST.value}" could not be found.')
+
     except json.JSONDecodeError:
         raise ValueError(f'The file "{Color.YELLOW.value}{file}'
                          f'"{Color.RST.value}" is not valid JSON.')

@@ -4,7 +4,7 @@ MYPY_STRICT = --strict
 FLAKE_STRICT = --max-complexity=25
 
 MAIN = src/__main__.py
-CONFIG = src/config.json
+CONFIG = config.json
 
 .PHONY: all install run clean lint lint-strict debug
 
@@ -14,7 +14,8 @@ install:
 	@uv sync
 
 run:
-	@uv run python -m src
+	@uv run python -m src $(CONFIG)
+
 clean:
 	@rm -Rf .venv
 	@rm -Rf __pycache__
