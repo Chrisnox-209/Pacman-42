@@ -4,12 +4,11 @@ from pydantic import ValidationError
 from src.ui import wrapper
 from src.utils import Color
 from src.parse import (ParseConfig,
-                       check_argument,
                        json_to_data)
 import sys
 
 
-def main(file_config: str) -> None:
+def main(config: str) -> None:
     maze: list[list[int]]
     player: Player
     ghosts: list[Ghost]
@@ -35,10 +34,13 @@ def main(file_config: str) -> None:
 
 
 if __name__ == "__main__":
-    file_config: str
-
+    if len(sys.argv) > 1 and len(sys.argv) <= 2:
+        file_config: str = sys.argv[1]
+    else:
+        print(f"\n{Color.RED.value}[ERROR] {Color.RST.value}"
+              "The configuration file argument is missing.")
+        sys.exit(1)
     try:
-        file_config = check_argument()
         main(file_config)
 
     except KeyboardInterrupt:

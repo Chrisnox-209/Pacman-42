@@ -2,7 +2,6 @@ from pydantic import BaseModel, field_validator
 from pathlib import Path
 from src.utils import Color
 import json
-import argparse
 
 
 class ConfigPathError(Exception):
@@ -10,17 +9,6 @@ class ConfigPathError(Exception):
     Exception raised for errors related to output file paths.
     """
     pass
-
-
-def check_argument() -> str:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--config",
-        type=str,
-        default="config.json",
-    )
-    args: argparse.Namespace = parser.parse_args()
-    return str(args.config)
 
 
 class LevelConfig(BaseModel):
