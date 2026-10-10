@@ -89,20 +89,30 @@ def move_randomly(path: dict[str, int],
 
 
 def unpredictable(start: tuple[int, int], pos_player: tuple[int, int],
-                  maze: list[list[int]]) -> tuple[int, int]:
+                  maze: list[list[int]],) -> tuple[int, int]:
+
     nb: int = random.randint(1, 100)
+
     if nb <= 70:
         target: list[tuple[int, int]] = bfs(start, pos_player, maze)
 
-        return target[1]
+        if len(target) > 1:
+            return target[1]
+
+        return start
+
     wall: int = maze[start[0]][start[1]]
+
     possible_choice: list[tuple[int, int]] | None = possible_neighbor(
-        wall, start[0], start[1])
+        wall,
+        start[0],
+        start[1],
+    )
 
     if possible_choice:
         return random.choice(possible_choice)
 
-    return pos_player
+    return start
 
 
 def to_flee(pos_ghost: tuple[int, int], pos_player: tuple[int, int],

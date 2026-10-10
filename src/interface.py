@@ -218,7 +218,7 @@ def create_game(config: ParseConfig
     game_state = GameState(
         score=0,
         level=1,
-        remaining_time=90,
+        remaining_time=config.level_max_time,
         frightened=False,
         game_over=False,
         cheat=False,
@@ -228,7 +228,7 @@ def create_game(config: ParseConfig
     level: LevelConfig = config.levels[level_index]
 
     generator = MazeGenerator(
-        size=(level.width, level.width),
+        size=(level.width, level.height),
         perfect=config.perfect,
         seed=config.seed,
     )
@@ -244,7 +244,7 @@ def create_game(config: ParseConfig
         y=player_y,
         spawn_position=(player_x, player_y),
         direction=(1, 0),
-        lives=3,
+        lives=config.lives,
     )
 
     height: int = len(maze) - 1

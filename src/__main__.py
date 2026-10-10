@@ -41,12 +41,10 @@ def main(file_config: str) -> None:
               f"{Color.ORANGE.value}",
               error.errors()[0]["msg"],
               f"{Color.RST.value}\n")
-        sys.exit(1)
 
     except ValueError as error:
         print(f"{Color.RED.value}[ERROR FILE SCORE]"
               f"{Color.RST.value}", error,)
-        sys.exit(1)
 
     maze, player, ghosts, game_state = create_game(config)
 
