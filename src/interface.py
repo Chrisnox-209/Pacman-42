@@ -100,6 +100,8 @@ def run(
 
     last_time: float = time.monotonic()
 
+    movement_key: int = -1
+
     while not game_state.game_over:
         key: int = stdscr.getch()
 
@@ -112,8 +114,7 @@ def run(
 
         if game_state.remaining_time == 0:
             game_state.game_over = True
-            
-            
+
         if key in (ord("q"), ord("Q")):
             break
         if key in (
