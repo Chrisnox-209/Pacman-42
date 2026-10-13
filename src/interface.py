@@ -12,6 +12,7 @@ from src.algorithm import (
 from src.ghost import Ghost
 from src.game import Player, GameState
 from src.parse import ParseConfig, LevelConfig
+from src.utils import time_game
 
 if TYPE_CHECKING:
     from src.ui import GameWindow
@@ -97,11 +98,22 @@ def run(
         "Dartagnan": None,
     }
 
-    movement_key = -1
+    last_time: float = time.monotonic()
 
     while not game_state.game_over:
         key: int = stdscr.getch()
 
+        current_time: float = time.monotonic()
+
+        if current_time - last_time >= 1:
+            game_state.remaining_time = time_game(
+                game_state.remaining_time)
+            last_time = current_time
+
+        if game_state.remaining_time == 0:
+            game_state.game_over = True
+            
+            
         if key in (ord("q"), ord("Q")):
             break
         if key in (

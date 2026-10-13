@@ -1,7 +1,7 @@
 """Pygame drawing and interface helpers for Pac-Man."""
 
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Literal
 
 import curses
 import pygame
@@ -226,7 +226,8 @@ def draw_hud(
         scaled(2),
     )
 
-    stats = (
+    stats: tuple[tuple[str, str, int], tuple[str, str, int],
+                 tuple[str, str, int], tuple[str, str, int]] = (
         ("SCORE", f"{game_state.score:06d}", 28),
         ("LIVES", str(player.lives), 230),
         ("LEVEL", str(game_state.level), 425),
@@ -246,7 +247,7 @@ def draw_hud(
 
 def get_player_facing(direction: tuple[int, int]) -> str:
     """Convert the player's (dx, dy) direction to a sprite-facing name."""
-    directions = {
+    directions: dict[tuple[int, int], str] = {
         (-1, 0): "left",
         (0, 1): "down",
         (1, 0): "right",
@@ -263,13 +264,13 @@ def draw_player(
     animation_frame: int,
 ) -> None:
     """Draw the player sprite at its current maze cell."""
-    image = images[animation_frame]
-    facing = get_player_facing(player.direction)
-    rotated_image = pygame.transform.rotate(
+    image: pygame.Surface = images[animation_frame]
+    facing: str = get_player_facing(player.direction)
+    rotated_image: pygame.Surface = pygame.transform.rotate(
         image,
         ROTATION_ANGLES[facing],
     )
-    image_rect = rotated_image.get_rect(
+    image_rect: pygame.Rect = rotated_image.get_rect(
         center=cell_center(player.x, player.y, maze_origin)
     )
     screen.blit(rotated_image, image_rect)
@@ -282,10 +283,10 @@ def draw_ghosts(
     frightened: bool,
 ) -> None:
     """Draw the ghost texture matching the current frightened mode."""
-    state = "frightened" if frightened else "normal"
+    state: Literal['frightened'] | Literal['normal'] = "frightened" if frightened else "normal"
     for ghost in ghosts:
-        image = GHOST_IMAGES[ghost.name][state]
-        rect = image.get_rect(
+        image: pygame.Surface = GHOST_IMAGES[ghost.name][state]
+        rect: pygame.Rect = image.get_rect(
             center=cell_center(ghost.x, ghost.y, maze_origin)
         )
         screen.blit(image, rect)
@@ -302,7 +303,7 @@ def draw_game(
     animation_frame: int,
 ) -> None:
     """Draw the HUD, maze, player, and ghosts for one frame."""
-    maze_origin = get_maze_origin(maze)
+    maze_origin: tuple[int, int] = get_maze_origin(maze)
     draw_hud(screen, fonts, game_state, player)
     draw_maze_grid(screen, maze, maze_origin)
     draw_player(screen, images, player, maze_origin, animation_frame)
@@ -315,7 +316,7 @@ def draw_menu(
     selected_option: int,
 ) -> None:
     """Draw the main menu and highlight the selected option."""
-    title = fonts["title"].render(
+    title: pygame.Surface = fonts["title"].render(
         "PAC-MAN",
         True,
         MENU_SELECTED_COLOR,
@@ -326,10 +327,15 @@ def draw_menu(
     )
 
     for index, option in enumerate(MENU_OPTIONS):
-        selected = index == selected_option
-        color = MENU_SELECTED_COLOR if selected else MENU_TEXT_COLOR
-        prefix = ">  " if selected else "   "
-        image = fonts["menu"].render(prefix + option, True, color)
+        selected: bool = index == selected_option
+        color: tuple[Literal[255], Literal[224],
+                     Literal[70]] | tuple[Literal[220],
+                                          Literal[225],
+                                          Literal[255]
+                                          ] = (MENU_SELECTED_COLOR
+                                               if selected else MENU_TEXT_COLOR)
+        prefix: Literal['>  '] | Literal['   '] = ">  " if selected else "   "
+        image: pygame.Surface = fonts["menu"].render(prefix + option, True, color)
         screen.blit(
             image,
             image.get_rect(
@@ -340,7 +346,7 @@ def draw_menu(
             ),
         )
 
-    help_text = fonts["menu"].render(
+    help_text: pygame.Surface = fonts["menu"].render(
         "UP / DOWN: select     ENTER: choose",
         True,
         HUD_LABEL_COLOR,
@@ -359,7 +365,7 @@ def draw_message(
     lines: tuple[str, ...],
 ) -> None:
     """Draw an information, pause, or game-over screen."""
-    title_image = fonts["title"].render(
+    title_image: pygame.Surface = fonts["title"].render(
         title,
         True,
         MENU_SELECTED_COLOR,
@@ -370,7 +376,7 @@ def draw_message(
     )
 
     for index, line in enumerate(lines):
-        line_image = fonts["info"].render(
+        line_image: pygame.Surface = fonts["info"].render(
             line,
             True,
             MENU_TEXT_COLOR,
@@ -385,7 +391,7 @@ def draw_message(
             ),
         )
 
-    footer = fonts["info"].render(
+    footer: pygame.Surface = fonts["info"].render(
         "ENTER or ESC: return",
         True,
         HUD_LABEL_COLOR,
