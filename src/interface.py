@@ -151,7 +151,7 @@ def run(
 
                 if start == position_player:
                     game_state.game_over = True
-                    return
+                    break
 
                 next_pos: tuple[int, int] = to_flee(
                     start,
@@ -165,7 +165,7 @@ def run(
 
                 if (ghost.y, ghost.x) == position_player:
                     game_state.game_over = True
-                    return
+                    break
 
         else:
             for ghost in ghosts:
@@ -176,7 +176,7 @@ def run(
 
                 if start == position_player:
                     game_state.game_over = True
-                    return
+                    break
 
                 # ### Athos
                 if ghost.name == "Athos":
@@ -189,7 +189,7 @@ def run(
                     if len(road) > 1:
                         ghost.move_to_position(road[1])
 
-                # ## Porthos
+                # ### Porthos
                 elif ghost.name == "Porthos":
                     target: tuple[int, int] = preshoot(
                         position_player,
@@ -233,7 +233,7 @@ def run(
 
                 if (ghost.y, ghost.x) == position_player:
                     game_state.game_over = True
-                    return
+                    break
 
         draw_maze(
             stdscr,
