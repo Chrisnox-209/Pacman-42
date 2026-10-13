@@ -28,7 +28,6 @@ HUD_VALUE_COLOR = (255, 255, 255)
 MENU_TEXT_COLOR = (220, 225, 255)
 MENU_SELECTED_COLOR = (255, 224, 70)
 WALL_COLOR = (42, 112, 255)
-PELLET_COLOR = (255, 224, 170)
 
 NORTH = 1
 EAST = 2
@@ -38,6 +37,7 @@ WEST = 8
 MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
+PACGUM_IMAGE: pygame.Surface
 
 PACMAN_FOLDER = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
@@ -55,7 +55,7 @@ def scaled(value: int) -> int:
 def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     """Create the window and prepare graphics at their final size."""
     global WINDOW_WIDTH, WINDOW_HEIGHT, UI_SCALE
-    global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE
+    global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
     window_size = (int(screen_width * 0.85), int(screen_height * 0.85))
 
@@ -76,6 +76,9 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
         "hud_value": pygame.font.Font(None, scaled(34)),
     }
 
+    path = PACMAN_FOLDER.parent / "pellets" / "pacgum.png"
+    image = pygame.image.load(path).convert_alpha()
+    PACGUM_IMAGE = resize_image(image, (scaled(12), scaled(12)))
     load_ghost_images()
     return screen, fonts, load_pacman_images()
 
@@ -222,12 +225,10 @@ def draw_maze_grid(
                 draw_wall(screen, left, top, thickness, TILE_SIZE)
 
             if walls != 15:
-                pygame.draw.circle(
-                    screen,
-                    PELLET_COLOR,
-                    cell_center(x, y, maze_origin),
-                    scaled(2),
+                rect = PACGUM_IMAGE.get_rect(
+                    center=cell_center(x, y, maze_origin)
                 )
+                screen.blit(PACGUM_IMAGE, rect)
 
 
 def draw_hud(
