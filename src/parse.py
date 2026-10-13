@@ -84,7 +84,7 @@ class LevelConfig(BaseModel):
                 f"{Color.RST.value} Width must be >= 10"
             )
 
-        if value > 40:
+        if value > 43:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
                 f"{Color.RST.value} Width must be <= 40"
@@ -273,7 +273,8 @@ class ParseConfig(BaseModel):
             "points_per_ghost": 15,
         }
 
-        default: int = defaults[info.field_name]
+        assert info.field_name is not None
+        default_points: int = defaults[info.field_name]
 
         if type(value) is not int or value < 1:
             print(
@@ -282,9 +283,9 @@ class ParseConfig(BaseModel):
                 f"{Color.RST.value} Points must be an integer "
                 "equal to or greater than 1\n"
                 f"{Color.MAGENTA.value}[Default value] "
-                f"{Color.GREEN.value}{info.field_name} = {default}"
+                f"{Color.GREEN.value}{info.field_name} = {default_points}"
             )
-            return default
+            return default_points
 
         return value
 
@@ -320,7 +321,8 @@ class ParseConfig(BaseModel):
             "speed_ghosts": 9,
         }
 
-        default: int = defaults[info.field_name]
+        assert info.field_name is not None
+        default_speed: int = defaults[info.field_name]
 
         if type(value) is not int or value < 1 or value > 100:
             print(
@@ -329,9 +331,9 @@ class ParseConfig(BaseModel):
                 f"{Color.RST.value} Speed must be an integer "
                 "between 1 and 100\n"
                 f"{Color.MAGENTA.value}[Default value] "
-                f"{Color.GREEN.value}{info.field_name} = {default}"
+                f"{Color.GREEN.value}{info.field_name} = {default_speed}"
             )
-            return default
+            return default_speed
 
         return value
 
