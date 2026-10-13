@@ -179,13 +179,27 @@ def cell_center(
     )
 
 
+def draw_wall(
+    screen: pygame.Surface,
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+) -> None:
+    """Draw a wall rectangle one pixel at a time."""
+    for pixel_y in range(y, y + height):
+        for pixel_x in range(x, x + width):
+            screen.set_at((pixel_x, pixel_y), WALL_COLOR)
+
+
 def draw_maze_grid(
     screen: pygame.Surface,
     maze: list[list[int]],
     maze_origin: tuple[int, int],
 ) -> None:
-    """Draw the wall bits as blue lines and open cells as pellets."""
+    """Draw walls pixel by pixel and open cells as pellets."""
     origin_x, origin_y = maze_origin
+    thickness = scaled(1)
 
     for y, row in enumerate(maze):
         for x, walls in enumerate(row):
@@ -195,24 +209,17 @@ def draw_maze_grid(
             bottom = top + TILE_SIZE
 
             if walls & NORTH:
-                pygame.draw.line(
-                    screen, WALL_COLOR, (left, top), (right, top), scaled(3)
-                )
+                draw_wall(screen, left, top, TILE_SIZE, thickness)
             if walls & EAST:
-                pygame.draw.line(
-                    screen, WALL_COLOR, (right, top),
-                    (right, bottom), scaled(3)
+                draw_wall(
+                    screen, right - thickness, top, thickness, TILE_SIZE
                 )
             if walls & SOUTH:
-                pygame.draw.line(
-                    screen, WALL_COLOR, (left, bottom),
-                    (right, bottom), scaled(3)
+                draw_wall(
+                    screen, left, bottom - thickness, TILE_SIZE, thickness
                 )
             if walls & WEST:
-                pygame.draw.line(
-                    screen, WALL_COLOR, (left, top),
-                    (left, bottom), scaled(3)
-                )
+                draw_wall(screen, left, top, thickness, TILE_SIZE)
 
             if walls != 15:
                 pygame.draw.circle(
