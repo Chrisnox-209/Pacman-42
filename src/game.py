@@ -7,12 +7,14 @@ class GameState:
                  remaining_time: int,
                  frightened: bool,
                  game_over: bool,
+                 victory: True,
                  cheat: bool) -> None:
         self.score: int = score
         self.level: int = level
         self.remaining_time: int = remaining_time
         self.cheat: bool = cheat
         self.game_over: bool = game_over
+        self.victory: bool = victory
         self.frightened: bool = frightened
 
 

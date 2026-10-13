@@ -40,7 +40,7 @@ GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
 PACGUM_IMAGE: pygame.Surface
 HUD_IMAGE: pygame.Surface
 
-PACMAN_FOLDER = (
+PACMAN_FOLDER: Path = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
 )
 
@@ -59,7 +59,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE
     global HUD_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
-    window_size = (int(screen_width * 0.85), int(screen_height * 0.85))
+    window_size: tuple[int, int] = (int(screen_width * 0.85), int(screen_height * 0.85))
 
     pygame.key.set_repeat(180, 100)
     screen = pygame.display.set_mode(window_size)
@@ -209,10 +209,10 @@ def draw_maze_grid(
 
     for y, row in enumerate(maze):
         for x, walls in enumerate(row):
-            left = origin_x + x * TILE_SIZE
-            top = origin_y + y * TILE_SIZE
-            right = left + TILE_SIZE
-            bottom = top + TILE_SIZE
+            left: int = origin_x + x * TILE_SIZE
+            top: int = origin_y + y * TILE_SIZE
+            right: int = left + TILE_SIZE
+            bottom: int = top + TILE_SIZE
 
             if walls & NORTH:
                 draw_wall(screen, left, top, TILE_SIZE, thickness)
