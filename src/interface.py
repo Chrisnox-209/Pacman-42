@@ -97,16 +97,29 @@ def run(
         "Dartagnan": None,
     }
 
+    movement_key = -1
+
     while not game_state.game_over:
         key: int = stdscr.getch()
 
         if key in (ord("q"), ord("Q")):
             break
+        if key in (
+            curses.KEY_UP,
+            curses.KEY_RIGHT,
+            curses.KEY_DOWN,
+            curses.KEY_LEFT,
+            ord("w"),
+            ord("d"),
+            ord("s"),
+            ord("a"),
+        ):
+            movement_key = key
 
         move_player(
             maze,
             player,
-            key,
+            movement_key,
         )
 
         if game_state.frightened:
