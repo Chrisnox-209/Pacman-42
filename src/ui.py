@@ -43,9 +43,8 @@ PACMAN_FOLDER = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
 )
 
-ROTATION_ANGLES = {"left": 0, "down": 90, "right": 180, "up": 270}
 FontSet = dict[str, pygame.font.Font]
-PacmanImages = list[pygame.Surface]
+PacmanImages = dict[str, list[pygame.Surface]]
 
 
 def scaled(value: int) -> int:
@@ -81,13 +80,31 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     return screen, fonts, load_pacman_images()
 
 
+def resize_image(
+    image: pygame.Surface,
+    size: tuple[int, int],
+) -> pygame.Surface:
+    """Resize an image by copying the nearest source pixel, including alpha."""
+    original_width, original_height = image.get_size()
+    new_width, new_height = size
+    resized = pygame.Surface(size, pygame.SRCALPHA)
+    for y in range(new_height):
+        source_y = y * original_height // new_height
+        for x in range(new_width):
+            source_x = x * original_width // new_width
+            resized.set_at((x, y), image.get_at((source_x, source_y)))
+    return resized
+
+
 def load_pacman_images() -> PacmanImages:
-    """Load the eight mouth animation frames once at startup."""
-    images = []
-    for number in range(8):
-        path = PACMAN_FOLDER / f"frame_{number:02d}.png"
-        image = pygame.image.load(path).convert_alpha()
-        images.append(pygame.transform.smoothscale(image, PACMAN_SIZE))
+    """Load the eight prepared frames for each direction once at startup."""
+    images: PacmanImages = {}
+    for direction in ("left", "right", "up", "down"):
+        images[direction] = []
+        for number in range(8):
+            path = PACMAN_FOLDER / direction / f"frame_{number:02d}.png"
+            image = pygame.image.load(path).convert_alpha()
+            images[direction].append(resize_image(image, PACMAN_SIZE))
     return images
 
 
@@ -98,7 +115,7 @@ def load_ghost_images() -> None:
         GHOST_IMAGES[name] = {}
         for state in ("normal", "frightened"):
             image = pygame.image.load(folder / f"{state}.png").convert_alpha()
-            GHOST_IMAGES[name][state] = pygame.transform.smoothscale(
+            GHOST_IMAGES[name][state] = resize_image(
                 image, (TILE_SIZE, TILE_SIZE)
             )
 
@@ -264,16 +281,12 @@ def draw_player(
     animation_frame: int,
 ) -> None:
     """Draw the player sprite at its current maze cell."""
-    image: pygame.Surface = images[animation_frame]
     facing: str = get_player_facing(player.direction)
-    rotated_image: pygame.Surface = pygame.transform.rotate(
-        image,
-        ROTATION_ANGLES[facing],
-    )
-    image_rect: pygame.Rect = rotated_image.get_rect(
+    image: pygame.Surface = images[facing][animation_frame]
+    image_rect: pygame.Rect = image.get_rect(
         center=cell_center(player.x, player.y, maze_origin)
     )
-    screen.blit(rotated_image, image_rect)
+    screen.blit(image, image_rect)
 
 
 def draw_ghosts(

@@ -1,15 +1,9 @@
 # Textures géométriques Pac-Man
 
-22 images PNG, 1254 × 1254 pixels, fond transparent (RGBA).
-Créées avec l’outil de génération d’images intégré, le 7 octobre 2026.
+46 images PNG, 1254 × 1254 pixels, fond transparent (RGBA).
+Les textures originales ont été créées avec l’outil de génération d’images intégré le 7 octobre 2026. Les directions de Pac-Man ont été préparées ensuite par rotation ou symétrie exacte des pixels, sans génération de nouveaux dessins.
 
-## Aperçu
-
-Ouvrir `preview.html` dans un navigateur. La galerie fonctionne hors ligne et montre les trois états des fantômes, les deux pacgums et l’animation de Pac-Man.
-
-## Direction artistique
-
-Formes géométriques simples, couleurs vives, contours bleu nuit et petits reflets clairs.
+## Fantômes
 
 | Fantôme | Forme | Couleur normale | Dossier |
 | --- | --- | --- | --- |
@@ -18,36 +12,36 @@ Formes géométriques simples, couleurs vives, contours bleu nuit et petits refl
 | Aramis | Triangle | Cyan | `ghosts/aramis/` |
 | Dartagnan | Croix + | Orange | `ghosts/dartagnan/` |
 
-Chaque dossier contient :
-
-- `normal.png` : apparence normale.
-- `frightened.png` : corps indigo, bordure de la couleur du fantôme et expression inquiète.
-- `returning.png` : yeux et contour coloré, intérieur transparent pour le retour au spawn.
+Chaque dossier contient `normal.png`, `frightened.png` et `returning.png`.
+L’interface utilise déjà les textures normales et de fuite selon `game_state.frightened`. Le retour au spawn reste à intégrer.
 
 ## Pac-Man
 
-Les 8 fichiers `pacman/frame_00.png` à `pacman/frame_07.png` vont de la bouche fermée à la bouche ouverte. Pac-Man regarde vers la gauche.
+Chaque direction possède huit images, de `frame_00.png` (bouche fermée) à `frame_07.png` (bouche ouverte) :
 
-Pour ouvrir puis fermer la bouche, lire les images dans cet ordre :
+- `pacman/left/` : les huit images originales.
+- `pacman/right/` : miroir horizontal des images de gauche, pour garder l’œil en haut.
+- `pacman/up/` : rotation de 270° antihoraire.
+- `pacman/down/` : rotation de 90° antihoraire.
 
-`00 → 01 → 02 → 03 → 04 → 05 → 06 → 07 → 06 → 05 → 04 → 03 → 02 → 01`
+Les fichiers sont déjà orientés. Aucune rotation n’est effectuée pendant le jeu et aucune dépendance de préparation des PNG n’est nécessaire pour le lancer.
 
-La galerie utilise 65 ms par image. Cette durée peut être ajustée à l’intégration.
+Ordre de l’animation :
 
-Conserver une taille d’affichage et un centre communs à toutes les images. Ne pas recadrer chaque frame séparément. Les PNG sont des images générées : il reste de légères variations de contour entre certaines frames. Le rendu en jeu devra être ajusté à sa taille réelle.
+`00 → 01 → 02 → 03 → 04 → 05 → 06 → 07 → 06 → 05 → 04 → 03 → 02 → 01 → 00`
 
-La rotation des sprites permet les autres directions : gauche 0°, bas 90°, droite 180°, haut 270° avec Pygame.
+L’interface utilise 20 ms par étape et ferme la bouche à l’arrêt.
+Les marges transparentes et le centre des images sont conservés. Il reste de légères variations de contour entre les frames générées d’origine.
+
+## Adaptation à l’écran
+
+Au démarrage, `resize_image()` dans `src/ui.py` redimensionne les images de Pac-Man et des fantômes par copie des pixels au plus proche voisin. La transparence est conservée. Ce calcul remplace `pygame.transform.smoothscale()` et ne lisse pas les contours.
+
+Les images sont ensuite réutilisées en mémoire. `draw_player()` choisit simplement `images[direction][animation_frame]`.
 
 ## Pacgums
 
 - `pellets/pacgum.png` : petite pastille crème.
 - `pellets/super_pacgum.png` : grosse pastille dorée avec une étoile claire.
 
-Les marges transparentes font partie des images ; la pacgum simple est volontairement plus petite que la super-pacgum.
-
-## Fichiers
-
-`manifest.json` donne les chemins des textures et l’ordre d’animation.
-Les prompts exacts sont conservés dans les sous-dossiers.
-
-Les PNG ont été inspectés ensemble dans la galerie et leur canal alpha a été contrôlé. Les 8 images de Pac-Man sont chargées par `ui.py`. Son animation en jeu utilise 20 ms par image et revient à la bouche fermée à l’arrêt. Les fantômes et les pacgums restent à intégrer.
+Ces deux textures restent à intégrer. Les marges transparentes font partie des images ; la pacgum simple est volontairement plus petite.
