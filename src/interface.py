@@ -12,7 +12,7 @@ from src.algorithm import (
 from src.ghost import Ghost
 from src.game import Player, GameState
 from src.parse import ParseConfig, LevelConfig
-from src.utils import time_game
+from src.utils import time_game, generate_pacgum
 
 if TYPE_CHECKING:
     from src.ui import GameWindow
@@ -21,9 +21,7 @@ import curses
 import time
 
 
-def find_player_spawn(
-    maze: list[list[int]],
-) -> tuple[int, int]:
+def find_player_spawn(maze: list[list[int]]) -> tuple[int, int]:
     height: int = len(maze)
     width: int = len(maze[0])
 
@@ -79,17 +77,11 @@ def run(
     player: Player,
     ghosts: list[Ghost],
     game_state: GameState,
+    config: ParseConfig,
 ) -> None:
     from src.ui import draw_maze, setup_terminal
 
     setup_terminal(stdscr)
-
-    last_paths: dict[str, str | None] = {
-        "Athos": None,
-        "Porthos": None,
-        "Aramis": None,
-        "Dartagnan": None,
-    }
 
     last_positions: dict[str, tuple[int, int] | None] = {
         "Athos": None,
@@ -142,6 +134,18 @@ def run(
             player.x,
         )
 
+        for key in game_state.position_pacgum:
+            if position_player == key and game_state.position_pacgum[key]:
+                game_state.score = (game_state.score +
+                                    config.points_per_pacgum)
+            if position_player == key:
+                game_state.position_pacgum[key] = False
+
+        if any(game_state.position_pacgum.values()) is not True:
+            game_state.level += 1
+            # game_state.victory = True
+            return
+
         if game_state.frightened:
             for ghost in ghosts:
                 start: tuple[int, int] = (
@@ -179,61 +183,61 @@ def run(
                     break
 
                 # ### Athos
-                if ghost.name == "Athos":
-                    road: list[tuple[int, int]] = bfs(
-                        start,
-                        position_player,
-                        maze,
-                    )
+                # if ghost.name == "Athos":
+                #     road: list[tuple[int, int]] = bfs(
+                #         start,
+                #         position_player,
+                #         maze,
+                #     )
 
-                    if len(road) > 1:
-                        ghost.move_to_position(road[1])
+                #     if len(road) > 1:
+                #         ghost.move_to_position(road[1])
 
-                # ### Porthos
-                elif ghost.name == "Porthos":
-                    target: tuple[int, int] = preshoot(
-                        position_player,
-                        maze,
-                    )
+                # # ### Porthos
+                # elif ghost.name == "Porthos":
+                #     target: tuple[int, int] = preshoot(
+                #         position_player,
+                #         maze,
+                #     )
 
-                    road = bfs(
-                        start,
-                        target,
-                        maze,
-                    )
+                #     road = bfs(
+                #         start,
+                #         target,
+                #         maze,
+                #     )
 
-                    if len(road) > 1:
-                        ghost.move_to_position(road[1])
+                #     if len(road) > 1:
+                #         ghost.move_to_position(road[1])
 
-                # ### Dartagnan
-                elif ghost.name == "Dartagnan":
-                    next_pos = unpredictable(
-                        start,
-                        position_player,
-                        maze,
-                    )
+                # # ### Dartagnan
+                # elif ghost.name == "Dartagnan":
+                #     next_pos = unpredictable(
+                #         start,
+                #         position_player,
+                #         maze,
+                #     )
 
-                    ghost.move_to_position(next_pos)
+                #     ghost.move_to_position(next_pos)
 
-                # Aramis
-                else:
-                    path: dict[str, int] | None = (
-                        ghost.check_path(maze)
-                    )
+                # # Aramis
+                # else:
+                #     path: dict[str, int] | None = (
+                #         ghost.check_path(maze)
+                #     )
 
-                    if path is not None:
-                        direction: str | None = move_randomly(
-                            path,
-                            last_paths[ghost.name],
-                        )
+                #     if path is not None:
+                #         direction: str | None = move_randomly(
+                #             path,
+                #             last_paths[ghost.name],
+                #         )
 
-                        if direction is not None:
-                            ghost.move_to_direction(direction)
-                            last_paths[ghost.name] = direction
+                #         if direction is not None:
+                #             ghost.move_to_direction(direction)
+                #             last_paths[ghost.name] = direction
 
-                if (ghost.y, ghost.x) == position_player:
-                    game_state.game_over = True
-                    break
+                # if (ghost.y, ghost.x) == position_player:
+                #     game_state.game_over = True
+                #     break
 
         draw_maze(
             stdscr,
@@ -249,8 +253,10 @@ def run(
 def create_game(config: ParseConfig
                 ) -> tuple[list[list[int]], Player, list[Ghost], GameState]:
 
+    list_pacgum: dict[tuple[int, int], bool] = {}
     game_state = GameState(
         score=0,
+        position_pacgum=list_pacgum,
         level=1,
         remaining_time=config.level_max_time,
         frightened=False,
@@ -269,6 +275,8 @@ def create_game(config: ParseConfig
     )
 
     maze: list[list[int]] = generator.maze
+
+    game_state.position_pacgum = generate_pacgum(maze, config.pacgum)
 
     player_x: int
     player_y: int
@@ -289,12 +297,8 @@ def create_game(config: ParseConfig
         Ghost(0, 0, (0, 0), "Athos"),
         Ghost(width, 0, (width, 0), "Porthos"),
         Ghost(0, height, (0, height), "Aramis"),
-        Ghost(
-            width,
-            height,
-            (width, height),
-            "Dartagnan",
-        ),
+        Ghost(width, height, (width, height),
+              "Dartagnan"),
     ]
 
     return maze, player, ghosts, game_state

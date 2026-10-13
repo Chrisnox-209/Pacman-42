@@ -1,5 +1,6 @@
 from enum import Enum
-import time
+
+import random
 
 
 class Color(Enum):
@@ -107,3 +108,66 @@ def time_game(remaining_time: int) -> int:
     if remaining_time > 0:
         remaining_time -= 1
     return remaining_time
+
+
+def find_player_spawn2(maze: list[list[int]]) -> tuple[int, int]:
+    height: int = len(maze)
+    width: int = len(maze[0])
+
+    center_x: int = width // 2
+    center_y: int = height // 2
+
+    for radius in range(max(width, height)):
+        for y in range(
+            max(0, center_y - radius),
+            min(height, center_y + radius + 1),
+        ):
+            for x in range(
+                max(0, center_x - radius),
+                min(width, center_x + radius + 1),
+            ):
+                if maze[y][x] != 15:
+                    return x, y
+
+    raise ValueError("No valid player spawn found.")
+
+
+def generate_pacgum(maze: list[list[int]],
+                    percentage_pacgum: int) -> dict[tuple[int, int], bool]:
+
+    player_x: int
+    player_y: int
+
+    list_packgum: dict[tuple[int, int], bool] = {}
+    free_cases: list[tuple[int, int]] = []
+
+    height: int = len(maze)
+    width: int = len(maze[0])
+
+    player_x, player_y = find_player_spawn2(maze)
+    corners_and_player: set[tuple[int, int]] = {
+        (0, 0),
+        (0, width - 1),
+        (height - 1, 0),
+        (height - 1, width - 1),
+        (player_y, player_x)
+    }
+
+    for y in range(height):
+        for x in range(len(maze[y])):
+
+            list_packgum[(y, x)] = False
+
+            if maze[y][x] != 15 and (y, x) not in corners_and_player:
+                free_cases.append((y, x))
+
+    quantity: int = len(free_cases) * percentage_pacgum // 100
+
+    result: list[tuple[int, int]] = random.sample(
+        free_cases, quantity
+    )
+
+    for position in result:
+        list_packgum[position] = True
+
+    return list_packgum

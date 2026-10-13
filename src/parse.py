@@ -196,7 +196,7 @@ class ParseConfig(BaseModel):
     @field_validator("pacgum", mode="before")
     @classmethod
     def check_pacgum(cls, value: Any) -> int:
-        if type(value) is not int or value < 10 or value > 100:
+        if type(value) is not int or value < 1 or value > 100:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
                 f"{Color.RED.value}(pacgum: {value})"

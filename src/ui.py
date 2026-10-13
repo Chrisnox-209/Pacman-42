@@ -202,6 +202,7 @@ def draw_maze_grid(
     screen: pygame.Surface,
     maze: list[list[int]],
     maze_origin: tuple[int, int],
+    position_pacgum: dict[tuple[int, int], bool],
 ) -> None:
     """Draw walls pixel by pixel and open cells as pellets."""
     origin_x, origin_y = maze_origin
@@ -227,11 +228,10 @@ def draw_maze_grid(
             if walls & WEST:
                 draw_wall(screen, left, top, thickness, TILE_SIZE)
 
-            if walls != 15:
-                rect = PACGUM_IMAGE.get_rect(
-                    center=cell_center(x, y, maze_origin)
-                )
-                screen.blit(PACGUM_IMAGE, rect)
+            for key, value in position_pacgum.items():
+                if (y, x) == key and value:
+                    rect: pygame.Rect = PACGUM_IMAGE.get_rect(center=cell_center(x, y, maze_origin))
+                    screen.blit(PACGUM_IMAGE, rect)
 
 
 def create_hud_image() -> pygame.Surface:
@@ -334,7 +334,7 @@ def draw_game(
     """Draw the HUD, maze, player, and ghosts for one frame."""
     maze_origin: tuple[int, int] = get_maze_origin(maze)
     draw_hud(screen, fonts, game_state, player)
-    draw_maze_grid(screen, maze, maze_origin)
+    draw_maze_grid(screen, maze, maze_origin, game_state.position_pacgum)
     draw_player(screen, images, player, maze_origin, animation_frame)
     draw_ghosts(screen, ghosts, maze_origin, game_state.frightened)
 
@@ -577,18 +577,18 @@ def draw_maze(
     game_state: GameState,
 ) -> None:
     """Animate the display during the 300 ms between game updates."""
-    position = (player.x, player.y)
-    moving = (
+    position: tuple[int, int] = (player.x, player.y)
+    moving: bool = (
         window.last_player_position is not None
         and position != window.last_player_position
     )
     window.last_player_position = position
     clock = pygame.time.Clock()
-    start = pygame.time.get_ticks()
+    start: int = pygame.time.get_ticks()
 
     while not window.closed:
         window.pending_key = window.getch()
-        elapsed = pygame.time.get_ticks() - start
+        elapsed: int = pygame.time.get_ticks() - start
         if window.closed or elapsed >= 300:
             break
 
@@ -665,6 +665,7 @@ def wrapper(
                     player,
                     ghosts,
                     game_state,
+                    config,
                 )
                 if window.closed:
                     break
