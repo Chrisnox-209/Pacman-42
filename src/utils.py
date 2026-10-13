@@ -1,4 +1,5 @@
 from enum import Enum
+import time
 
 
 class Color(Enum):
@@ -100,3 +101,9 @@ def mirror_path(path: str | None) -> str:
     if path == "W":
         return "E"
     return ""
+
+
+def time_game(remaining_time: int) -> int:
+    if remaining_time > 0:
+        remaining_time -= 1
+    return remaining_time
