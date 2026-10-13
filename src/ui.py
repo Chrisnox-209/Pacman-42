@@ -38,6 +38,7 @@ MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
 PACGUM_IMAGE: pygame.Surface
+HUD_IMAGE: pygame.Surface
 
 PACMAN_FOLDER = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
@@ -56,6 +57,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     """Create the window and prepare graphics at their final size."""
     global WINDOW_WIDTH, WINDOW_HEIGHT, UI_SCALE
     global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE
+    global HUD_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
     window_size = (int(screen_width * 0.85), int(screen_height * 0.85))
 
@@ -67,6 +69,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     HUD_HEIGHT = scaled(86)
     TILE_SIZE = scaled(24)
     PACMAN_SIZE = (scaled(30), scaled(30))
+    HUD_IMAGE = create_hud_image()
 
     fonts: FontSet = {
         "title": pygame.font.Font(None, scaled(72)),
@@ -231,6 +234,15 @@ def draw_maze_grid(
                 screen.blit(PACGUM_IMAGE, rect)
 
 
+def create_hud_image() -> pygame.Surface:
+    """Prepare the HUD background once at its final size."""
+    image = pygame.Surface((WINDOW_WIDTH, HUD_HEIGHT))
+    for y in range(HUD_HEIGHT):
+        for x in range(WINDOW_WIDTH):
+            image.set_at((x, y), HUD_BACKGROUND_COLOR)
+    return image
+
+
 def draw_hud(
     screen: pygame.Surface,
     fonts: FontSet,
@@ -238,11 +250,7 @@ def draw_hud(
     player: Player,
 ) -> None:
     """Display the current score, lives, level, and remaining time."""
-    pygame.draw.rect(
-        screen,
-        HUD_BACKGROUND_COLOR,
-        (0, 0, WINDOW_WIDTH, HUD_HEIGHT),
-    )
+    screen.blit(HUD_IMAGE, (0, 0))
     pygame.draw.line(
         screen,
         WALL_COLOR,
