@@ -553,6 +553,7 @@ class GameWindow:
         self.animation_frame = 0
         self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
+        self.return_to_menu = False
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -560,6 +561,9 @@ class GameWindow:
 
     def getch(self) -> int:
         """Translate Pygame input into the original terminal key codes."""
+        if self.return_to_menu:
+            return ord("q")
+
         arrow_keys = {
             pygame.K_UP: curses.KEY_UP,
             pygame.K_RIGHT: curses.KEY_RIGHT,
@@ -583,7 +587,10 @@ class GameWindow:
                 elif event.unicode:
                     key = ord(event.unicode[0])
 
-        return ord("q") if self.closed else key
+        if self.closed or self.return_to_menu:
+            return ord("q")
+
+        return key
 
     def pause(self) -> None:
         """Wait for the user to resume without updating game objects."""
@@ -595,7 +602,7 @@ class GameWindow:
                 self.screen,
                 self.fonts,
                 "PAUSED",
-                ("ENTER or ESC: resume", "Q: quit"),
+                ("ENTER: resume", "ESC: return to menu", "Q: quit"),
             )
             self.refresh()
 
@@ -603,12 +610,13 @@ class GameWindow:
                 if event.type == pygame.QUIT:
                     self.closed = True
                 elif event.type == pygame.KEYDOWN:
-                    if event.key in (
-                        pygame.K_RETURN,
-                        pygame.K_KP_ENTER,
-                        pygame.K_ESCAPE,
-                    ):
+                    if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         return
+
+                    if event.key == pygame.K_ESCAPE:
+                        self.return_to_menu = True
+                        return
+
                     if event.key == pygame.K_q:
                         self.closed = True
 
@@ -641,7 +649,7 @@ def draw_maze(
         frame_start = time.perf_counter()
         window.pending_key = window.getch()
         elapsed = int((time.monotonic() - start) * 1000)
-        if window.closed or elapsed >= 300:
+        if window.closed or window.return_to_menu or elapsed >= 300:
             break
 
         window.animation_frame = (PACMAN_SEQUENCE[elapsed // 20]
@@ -723,7 +731,15 @@ def wrapper(
                 )
                 if window.closed:
                     break
-                current_screen = "game_over"
+                if window.return_to_menu:
+                    window.return_to_menu = False
+                    maze, player, ghosts, game_state = create_game(config)
+                    window.last_player_position = None
+                    window.animation_frame = 0
+                    window.pending_key = -1
+                    current_screen = "menu"
+                else:
+                    current_screen = "game_over"
                 continue
 
             draw_screen(
