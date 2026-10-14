@@ -34,6 +34,7 @@ MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
 PACGUM_IMAGE: pygame.Surface
+Super_PACGUM_IMAGE: pygame.Surface
 HUD_IMAGE: pygame.Surface
 BACKGROUND_IMAGE: pygame.Surface
 
@@ -61,7 +62,7 @@ def scaled(value: int) -> int:
 def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     """Create the window and prepare graphics at their final size."""
     global WINDOW_WIDTH, WINDOW_HEIGHT, UI_SCALE
-    global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE
+    global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE, Super_PACGUM_IMAGE
     global HUD_IMAGE, BACKGROUND_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
     window_size: tuple[int, int] = (int(screen_width * 0.85), int(screen_height * 0.85))
@@ -82,6 +83,9 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     path = PACMAN_FOLDER.parent / "pellets" / "pacgum.png"
     image = pygame.image.load(path).convert_alpha()
     PACGUM_IMAGE = resize_image(image, (scaled(12), scaled(12)))
+    path = PACMAN_FOLDER.parent / "pellets" / "super_pacgum.png"
+    image = pygame.image.load(path).convert_alpha()
+    Super_PACGUM_IMAGE = resize_image(image, (scaled(18), scaled(18)))
     load_ghost_images()
     return screen, fonts, load_pacman_images()
 
@@ -279,8 +283,8 @@ def draw_maze_grid(
 
             for key, value in position_super_pacgum.items():
                 if (y, x) == key and value:
-                    # ### Desiner les superpacgum ici
-                    pass
+                    rect: pygame.Rect = Super_PACGUM_IMAGE.get_rect(center=cell_center(x, y, maze_origin))
+                    screen.blit(Super_PACGUM_IMAGE, rect)
 
 
 def create_hud_image() -> pygame.Surface:
