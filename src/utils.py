@@ -173,7 +173,8 @@ def generate_pacgum(maze: list[list[int]],
     return list_packgum
 
 
-def generate_super_pacgum(maze: list[list[int]]) -> dict[tuple[int, int], bool]:
+def generate_super_pacgum(maze: list[list[int]]
+                          ) -> dict[tuple[int, int], bool]:
     height: int = len(maze)
     width: int = len(maze[0])
 

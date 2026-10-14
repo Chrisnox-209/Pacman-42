@@ -60,7 +60,7 @@ if __name__ == "__main__":
         print(f"\n{Color.RED.value}[ERROR] {Color.RST.value}"
               "The configuration file argument is missing.")
         sys.exit(1)
-        
+
     try:
         main(file_config)
 
