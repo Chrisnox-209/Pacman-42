@@ -364,13 +364,27 @@ def draw_ghosts(
     maze_origin: tuple[int, int],
     frightened: bool,
 ) -> None:
-    """Draw the ghost texture matching the current frightened mode."""
-    state: Literal['frightened'] | Literal['normal'] = "frightened" if frightened else "normal"
     for ghost in ghosts:
-        image: pygame.Surface = GHOST_IMAGES[ghost.name][state]
+        if ghost.state == "dead":
+            continue
+
+        if ghost.state == "frightened":
+            state = "frightened"
+        else:
+            state = "normal"
+
+        image: pygame.Surface = GHOST_IMAGES[
+            ghost.name
+        ][state]
+
         rect: pygame.Rect = image.get_rect(
-            center=cell_center(ghost.x, ghost.y, maze_origin)
+            center=cell_center(
+                ghost.x,
+                ghost.y,
+                maze_origin,
+            )
         )
+
         screen.blit(image, rect)
 
 

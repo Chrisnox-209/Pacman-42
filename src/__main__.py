@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from src.interface import create_game, run
+from src.run import run
+from src.interface import create_game
 from src.game import Player, GameState
 from src.ghost import Ghost
 from pydantic import ValidationError
@@ -59,14 +60,16 @@ if __name__ == "__main__":
         print(f"\n{Color.RED.value}[ERROR] {Color.RST.value}"
               "The configuration file argument is missing.")
         sys.exit(1)
-    try:
-        main(file_config)
+        
+    main(file_config)
+    # try:
+    #     main(file_config)
 
-    except KeyboardInterrupt:
-        print(f"\n{Color.ORANGE.value}The program was abruptly "
-              f"exited by the user.{Color.RST.value}")
+    # except KeyboardInterrupt:
+    #     print(f"\n{Color.ORANGE.value}The program was abruptly "
+    #           f"exited by the user.{Color.RST.value}")
 
-    except Exception as e:
-        print(f"\n{Color.RED.value}[CRITICAL ERROR]{Color.RST.value} {e}",
-              file=sys.stderr)
-        sys.exit(1)
+    # except Exception as e:
+    #     print(f"\n{Color.RED.value}[CRITICAL ERROR]{Color.RST.value} {e}",
+    #           file=sys.stderr)
+    #     sys.exit(1)
