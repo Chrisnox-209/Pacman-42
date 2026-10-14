@@ -4,12 +4,14 @@ from src.utils import convert_wall
 class Ghost:
     def __init__(self, x: int, y: int,
                  spawn_position: tuple[int, int],
-                 name: str) -> None:
+                 name: str,
+                 state: str) -> None:
 
         self.x: int = x
         self.y: int = y
         self.spawn_position: tuple[int, int] = spawn_position
         self.name: str = name
+        self.state: str = state
 
     def move_to_direction(self, direction: str) -> None:
         if direction == "N":

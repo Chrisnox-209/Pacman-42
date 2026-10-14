@@ -74,6 +74,7 @@ class ParseHighScore(BaseModel):
 class LevelConfig(BaseModel):
     width: int
     height: int
+    escape_time: int
 
     @field_validator("width")
     @classmethod
@@ -105,6 +106,23 @@ class LevelConfig(BaseModel):
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
                 f"{Color.RST.value} Height must be <= 20"
+            )
+
+        return value
+
+    @field_validator("escape_time")
+    @classmethod
+    def check_escape_time(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError(
+                f"\n{Color.BLUE.value}[INFO]"
+                f"{Color.RST.value} escape_time must be <= 0"
+            )
+
+        if value > 10:
+            raise ValueError(
+                f"\n{Color.BLUE.value}[INFO]"
+                f"{Color.RST.value} escape_time must be >= 10"
             )
 
         return value

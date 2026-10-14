@@ -3,43 +3,53 @@
 	"levels": [
 	    {
 	        "width": 20,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 6
 	    },
 	    {
 	        "width": 22,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 5
 	    },
 	    {
 	        "width": 24,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 4
 	    },
 	    {
 	        "width": 26,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 3
 	    },
 	    {
 	        "width": 28,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 2
 	    },
 	    {
 	        "width": 30,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 5
 	    },
 	    {
 	        "width": 32,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 2
 	    },
 	    {
 	        "width": 34,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 2
 	    },
 	    {
 	        "width": 36,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 1
 	    },
 	    {
 	        "width": 40,
-	        "height": 20
+	        "height": 20,
+			"escape_time": 0
 	    }
 	],
 	# number of lives
