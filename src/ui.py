@@ -23,10 +23,6 @@ PACMAN_SEQUENCE = (0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0)
 
 BACKGROUND_COLOR = (8, 12, 38)
 HUD_BACKGROUND_COLOR = (15, 22, 58)
-HUD_LABEL_COLOR = (153, 174, 255)
-HUD_VALUE_COLOR = (255, 255, 255)
-MENU_TEXT_COLOR = (220, 225, 255)
-MENU_SELECTED_COLOR = (255, 224, 70)
 WALL_COLOR = (42, 112, 255)
 
 NORTH = 1
@@ -44,7 +40,15 @@ PACMAN_FOLDER = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
 )
 
-FontSet = dict[str, pygame.font.Font]
+FONT_FOLDER = Path(__file__).parent.parent / "assets" / "font"
+TITLE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ -?"
+TEXT_CHARACTERS = "".join(chr(code) for code in range(32, 127))
+FONT_COLUMNS = 16
+FONT_WIDTH = 20
+FONT_HEIGHT = 24
+
+BitmapFont = dict[str, pygame.Surface]
+FontSet = dict[str, BitmapFont]
 PacmanImages = dict[str, list[pygame.Surface]]
 
 
@@ -71,13 +75,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     PACMAN_SIZE = (scaled(30), scaled(30))
     HUD_IMAGE = create_hud_image()
 
-    fonts: FontSet = {
-        "title": pygame.font.Font(None, scaled(72)),
-        "menu": pygame.font.Font(None, scaled(34)),
-        "info": pygame.font.Font(None, scaled(30)),
-        "hud_label": pygame.font.Font(None, scaled(24)),
-        "hud_value": pygame.font.Font(None, scaled(34)),
-    }
+    fonts = load_fonts()
 
     path = PACMAN_FOLDER.parent / "pellets" / "pacgum.png"
     image = pygame.image.load(path).convert_alpha()
@@ -100,6 +98,49 @@ def resize_image(
             source_x = x * original_width // new_width
             resized.set_at((x, y), image.get_at((source_x, source_y)))
     return resized
+
+
+def load_fonts() -> FontSet:
+    """Load both atlases and extract their characters once at startup."""
+    fonts: FontSet = {}
+    for style, characters in (
+        ("title", TITLE_CHARACTERS),
+        ("text", TEXT_CHARACTERS),
+    ):
+        atlas = pygame.image.load(
+            FONT_FOLDER / f"{style}.png"
+        ).convert_alpha()
+        fonts[style] = {}
+        for index, character in enumerate(characters):
+            letter = pygame.Surface(
+                (FONT_WIDTH, FONT_HEIGHT), pygame.SRCALPHA
+            )
+            source_x = (index % FONT_COLUMNS) * FONT_WIDTH
+            source_y = (index // FONT_COLUMNS) * FONT_HEIGHT
+            for y in range(FONT_HEIGHT):
+                for x in range(FONT_WIDTH):
+                    letter.set_at(
+                        (x, y),
+                        atlas.get_at((source_x + x, source_y + y)),
+                    )
+            fonts[style][character] = resize_image(
+                letter, (scaled(FONT_WIDTH), scaled(FONT_HEIGHT))
+            )
+    return fonts
+
+
+def render_text(font: BitmapFont, text: str) -> pygame.Surface:
+    """Build a text image using the loaded characters."""
+    width, height = font[" "].get_size()
+    spacing = scaled(14)
+    image = pygame.Surface(
+        (max(1, (len(text) - 1) * spacing + width), height),
+        pygame.SRCALPHA,
+    )
+    for index, character in enumerate(text):
+        letter = font.get(character, font["?"])
+        image.blit(letter, (index * spacing, 0))
+    return image
 
 
 def load_pacman_images() -> PacmanImages:
@@ -269,11 +310,11 @@ def draw_hud(
 
     for label, value, x in stats:
         screen.blit(
-            fonts["hud_label"].render(label, True, HUD_LABEL_COLOR),
+            render_text(fonts["text"], label),
             (WINDOW_WIDTH * x // 800, scaled(15)),
         )
         screen.blit(
-            fonts["hud_value"].render(value, True, HUD_VALUE_COLOR),
+            render_text(fonts["text"], value),
             (WINDOW_WIDTH * x // 800, scaled(42)),
         )
 
@@ -345,26 +386,16 @@ def draw_menu(
     selected_option: int,
 ) -> None:
     """Draw the main menu and highlight the selected option."""
-    title: pygame.Surface = fonts["title"].render(
-        "PAC-MAN",
-        True,
-        MENU_SELECTED_COLOR,
-    )
+    title = render_text(fonts["title"], "PAC-MAN")
     screen.blit(
         title,
         title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
     )
 
     for index, option in enumerate(MENU_OPTIONS):
-        selected: bool = index == selected_option
-        color: tuple[Literal[255], Literal[224],
-                     Literal[70]] | tuple[Literal[220],
-                                          Literal[225],
-                                          Literal[255]
-                                          ] = (MENU_SELECTED_COLOR
-                                               if selected else MENU_TEXT_COLOR)
-        prefix: Literal['>  '] | Literal['   '] = ">  " if selected else "   "
-        image: pygame.Surface = fonts["menu"].render(prefix + option, True, color)
+        selected = index == selected_option
+        prefix = ">  " if selected else "   "
+        image = render_text(fonts["text"], prefix + option)
         screen.blit(
             image,
             image.get_rect(
@@ -375,10 +406,8 @@ def draw_menu(
             ),
         )
 
-    help_text: pygame.Surface = fonts["menu"].render(
-        "UP / DOWN: select     ENTER: choose",
-        True,
-        HUD_LABEL_COLOR,
+    help_text = render_text(
+        fonts["text"], "UP / DOWN: select     ENTER: choose"
     )
     screen.blit(
         help_text,
@@ -394,22 +423,14 @@ def draw_message(
     lines: tuple[str, ...],
 ) -> None:
     """Draw an information, pause, or game-over screen."""
-    title_image: pygame.Surface = fonts["title"].render(
-        title,
-        True,
-        MENU_SELECTED_COLOR,
-    )
+    title_image = render_text(fonts["title"], title.upper())
     screen.blit(
         title_image,
         title_image.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
     )
 
     for index, line in enumerate(lines):
-        line_image: pygame.Surface = fonts["info"].render(
-            line,
-            True,
-            MENU_TEXT_COLOR,
-        )
+        line_image = render_text(fonts["text"], line)
         screen.blit(
             line_image,
             line_image.get_rect(
@@ -420,11 +441,7 @@ def draw_message(
             ),
         )
 
-    footer: pygame.Surface = fonts["info"].render(
-        "ENTER or ESC: return",
-        True,
-        HUD_LABEL_COLOR,
-    )
+    footer = render_text(fonts["text"], "ENTER or ESC: return")
     screen.blit(
         footer,
         footer.get_rect(center=(WINDOW_WIDTH // 2,
