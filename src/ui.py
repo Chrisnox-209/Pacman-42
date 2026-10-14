@@ -1,7 +1,7 @@
 """Pygame drawing and interface helpers for Pac-Man."""
 
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Callable
 
 import curses
 import time
@@ -33,10 +33,10 @@ WEST = 8
 MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
-PACGUM_IMAGE: pygame.Surface
-Super_PACGUM_IMAGE: pygame.Surface
-HUD_IMAGE: pygame.Surface
-BACKGROUND_IMAGE: pygame.Surface
+PACGUM_IMAGE = pygame.Surface((1, 1))
+Super_PACGUM_IMAGE = pygame.Surface((1, 1))
+HUD_IMAGE = pygame.Surface((1, 1))
+BACKGROUND_IMAGE = pygame.Surface((1, 1))
 
 PACMAN_FOLDER: Path = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
@@ -65,7 +65,9 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE, Super_PACGUM_IMAGE
     global HUD_IMAGE, BACKGROUND_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
-    window_size: tuple[int, int] = (int(screen_width * 0.85), int(screen_height * 0.85))
+    window_size = (
+        int(screen_width * 0.85), int(screen_height * 0.85)
+    )
 
     pygame.key.set_repeat(180, 100)
     screen = pygame.display.set_mode(window_size)
@@ -278,12 +280,16 @@ def draw_maze_grid(
 
             for key, value in position_pacgum.items():
                 if (y, x) == key and value:
-                    rect: pygame.Rect = PACGUM_IMAGE.get_rect(center=cell_center(x, y, maze_origin))
+                    rect = PACGUM_IMAGE.get_rect(
+                        center=cell_center(x, y, maze_origin)
+                    )
                     screen.blit(PACGUM_IMAGE, rect)
 
             for key, value in position_super_pacgum.items():
                 if (y, x) == key and value:
-                    rect: pygame.Rect = Super_PACGUM_IMAGE.get_rect(center=cell_center(x, y, maze_origin))
+                    rect = Super_PACGUM_IMAGE.get_rect(
+                        center=cell_center(x, y, maze_origin)
+                    )
                     screen.blit(Super_PACGUM_IMAGE, rect)
 
 
@@ -664,6 +670,7 @@ def wrapper(
             Player,
             list[Ghost],
             GameState,
+            ParseConfig,
         ],
         None,
     ],
