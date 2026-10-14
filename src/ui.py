@@ -203,10 +203,11 @@ def draw_maze_grid(
     maze: list[list[int]],
     maze_origin: tuple[int, int],
     position_pacgum: dict[tuple[int, int], bool],
+    position_super_pacgum: dict[tuple[int, int], bool],
 ) -> None:
     """Draw walls pixel by pixel and open cells as pellets."""
     origin_x, origin_y = maze_origin
-    thickness = scaled(1)
+    thickness: int = scaled(1)
 
     for y, row in enumerate(maze):
         for x, walls in enumerate(row):
@@ -232,6 +233,11 @@ def draw_maze_grid(
                 if (y, x) == key and value:
                     rect: pygame.Rect = PACGUM_IMAGE.get_rect(center=cell_center(x, y, maze_origin))
                     screen.blit(PACGUM_IMAGE, rect)
+
+            for key, value in position_super_pacgum.items():
+                if (y, x) == key and value:
+                    # ### Desiner les superpacgum ici
+                    pass
 
 
 def create_hud_image() -> pygame.Surface:
@@ -334,7 +340,9 @@ def draw_game(
     """Draw the HUD, maze, player, and ghosts for one frame."""
     maze_origin: tuple[int, int] = get_maze_origin(maze)
     draw_hud(screen, fonts, game_state, player)
-    draw_maze_grid(screen, maze, maze_origin, game_state.position_pacgum)
+    draw_maze_grid(screen, maze, maze_origin,
+                   game_state.position_pacgum,
+                   game_state.position_super_pacgum,)
     draw_player(screen, images, player, maze_origin, animation_frame)
     draw_ghosts(screen, ghosts, maze_origin, game_state.frightened)
 

@@ -110,7 +110,7 @@ def time_game(remaining_time: int) -> int:
     return remaining_time
 
 
-def find_player_spawn2(maze: list[list[int]]) -> tuple[int, int]:
+def find_player_spawn(maze: list[list[int]]) -> tuple[int, int]:
     height: int = len(maze)
     width: int = len(maze[0])
 
@@ -144,7 +144,7 @@ def generate_pacgum(maze: list[list[int]],
     height: int = len(maze)
     width: int = len(maze[0])
 
-    player_x, player_y = find_player_spawn2(maze)
+    player_x, player_y = find_player_spawn(maze)
     corners_and_player: set[tuple[int, int]] = {
         (0, 0),
         (0, width - 1),
@@ -171,3 +171,16 @@ def generate_pacgum(maze: list[list[int]],
         list_packgum[position] = True
 
     return list_packgum
+
+
+def generate_super_pacgum(maze: list[list[int]]) -> dict[tuple[int, int], bool]:
+    height: int = len(maze)
+    width: int = len(maze[0])
+
+    list_super_packgum: dict[tuple[int, int], bool] = {
+        (0, 0): True,
+        (0, width - 1): True,
+        (height - 1, 0): True,
+        (height - 1, width - 1): True
+    }
+    return list_super_packgum

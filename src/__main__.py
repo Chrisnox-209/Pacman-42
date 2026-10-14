@@ -51,7 +51,7 @@ def main(file_config: str) -> None:
     wrapper(run, maze, player, ghosts,
             game_state, config, scores)
 
-    
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and len(sys.argv) <= 2:
         file_config: str = sys.argv[1]
