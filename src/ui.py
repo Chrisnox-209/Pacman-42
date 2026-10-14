@@ -1,7 +1,7 @@
 """Pygame drawing and interface helpers for Pac-Man."""
 
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Callable
 
 import curses
 import time
