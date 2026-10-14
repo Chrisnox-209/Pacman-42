@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Callable, Literal
 
 import curses
+import time
 import pygame
 
 from src.parse import ParseConfig, ParseHighScore
@@ -21,7 +22,6 @@ TILE_SIZE = 24
 PACMAN_SIZE = (30, 30)
 PACMAN_SEQUENCE = (0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0)
 
-BACKGROUND_COLOR = (8, 12, 38)
 HUD_BACKGROUND_COLOR = (15, 22, 58)
 WALL_COLOR = (42, 112, 255)
 
@@ -35,6 +35,7 @@ MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
 PACGUM_IMAGE: pygame.Surface
 HUD_IMAGE: pygame.Surface
+BACKGROUND_IMAGE: pygame.Surface
 
 PACMAN_FOLDER: Path = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
@@ -61,7 +62,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     """Create the window and prepare graphics at their final size."""
     global WINDOW_WIDTH, WINDOW_HEIGHT, UI_SCALE
     global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE
-    global HUD_IMAGE
+    global HUD_IMAGE, BACKGROUND_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
     window_size: tuple[int, int] = (int(screen_width * 0.85), int(screen_height * 0.85))
 
@@ -74,6 +75,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     TILE_SIZE = scaled(24)
     PACMAN_SIZE = (scaled(30), scaled(30))
     HUD_IMAGE = create_hud_image()
+    BACKGROUND_IMAGE = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 
     fonts = load_fonts()
 
@@ -298,11 +300,11 @@ def draw_hud(
 ) -> None:
     """Display the current score, lives, level, and remaining time."""
     screen.blit(HUD_IMAGE, (0, 0))
-    pygame.draw.line(
+    draw_wall(
         screen,
-        WALL_COLOR,
-        (0, HUD_HEIGHT - 1),
-        (WINDOW_WIDTH, HUD_HEIGHT - 1),
+        0,
+        HUD_HEIGHT - scaled(100),
+        WINDOW_WIDTH,
         scaled(2),
     )
 
@@ -470,7 +472,7 @@ def draw_screen(
     animation_frame: int,
 ) -> None:
     """Clear the window and draw the active screen."""
-    screen.fill(BACKGROUND_COLOR)
+    screen.blit(BACKGROUND_IMAGE, (0, 0))
 
     if current_screen == "menu":
         draw_menu(screen, fonts, selected_option)
@@ -561,10 +563,10 @@ class GameWindow:
 
     def pause(self) -> None:
         """Wait for the user to resume without updating game objects."""
-        clock = pygame.time.Clock()
 
         while not self.closed:
-            self.screen.fill(BACKGROUND_COLOR)
+            frame_start = time.perf_counter()
+            self.screen.blit(BACKGROUND_IMAGE, (0, 0))
             draw_message(
                 self.screen,
                 self.fonts,
@@ -586,12 +588,13 @@ class GameWindow:
                     if event.key == pygame.K_q:
                         self.closed = True
 
-            clock.tick(60)
+            frame_elapsed = time.perf_counter() - frame_start
+            time.sleep(max(0, 1 / 60 - frame_elapsed))
 
 
 def setup_terminal(window: GameWindow) -> None:
     """Prepare the graphical display using the original hook name."""
-    window.screen.fill(BACKGROUND_COLOR)
+    window.screen.blit(BACKGROUND_IMAGE, (0, 0))
 
 
 def draw_maze(
@@ -608,18 +611,18 @@ def draw_maze(
         and position != window.last_player_position
     )
     window.last_player_position = position
-    clock = pygame.time.Clock()
-    start: int = pygame.time.get_ticks()
+    start = time.monotonic()
 
     while not window.closed:
+        frame_start = time.perf_counter()
         window.pending_key = window.getch()
-        elapsed: int = pygame.time.get_ticks() - start
+        elapsed = int((time.monotonic() - start) * 1000)
         if window.closed or elapsed >= 300:
             break
 
         window.animation_frame = (PACMAN_SEQUENCE[elapsed // 20]
                                   if moving else 0)
-        window.screen.fill(BACKGROUND_COLOR)
+        window.screen.blit(BACKGROUND_IMAGE, (0, 0))
         draw_game(
             window.screen,
             window.fonts,
@@ -631,7 +634,8 @@ def draw_maze(
             window.animation_frame,
         )
         window.refresh()
-        clock.tick(60)
+        frame_elapsed = time.perf_counter() - frame_start
+        time.sleep(max(0, 1 / 60 - frame_elapsed))
 
 
 def wrapper(
@@ -657,12 +661,12 @@ def wrapper(
 
     try:
         window = GameWindow()
-        clock = pygame.time.Clock()
         current_screen = "menu"
         selected_option = 0
         running = True
 
         while running and not window.closed:
+            frame_start = time.perf_counter()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     window.closed = True
@@ -710,7 +714,8 @@ def wrapper(
                 window.animation_frame,
             )
             window.refresh()
-            clock.tick(60)
+            frame_elapsed = time.perf_counter() - frame_start
+            time.sleep(max(0, 1 / 60 - frame_elapsed))
 
     finally:
         pygame.quit()
