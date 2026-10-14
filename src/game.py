@@ -3,16 +3,23 @@
 
 class GameState:
     def __init__(self, score: int,
+                 position_pacgum: dict[tuple[int, int], bool],
+                 position_super_pacgum: dict[tuple[int, int], bool],
                  level: int,
                  remaining_time: int,
                  frightened: bool,
                  game_over: bool,
+                 victory: bool,
                  cheat: bool) -> None:
         self.score: int = score
+        self.position_pacgum: dict[tuple[int, int], bool] = position_pacgum
+        self.position_super_pacgum: dict[tuple[int, int],
+                                         bool] = position_super_pacgum
         self.level: int = level
         self.remaining_time: int = remaining_time
         self.cheat: bool = cheat
         self.game_over: bool = game_over
+        self.victory: bool = victory
         self.frightened: bool = frightened
 
 

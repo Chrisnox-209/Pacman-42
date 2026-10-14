@@ -12,37 +12,14 @@ from src.algorithm import (
 from src.ghost import Ghost
 from src.game import Player, GameState
 from src.parse import ParseConfig, LevelConfig
-from src.utils import time_game
+from src.utils import (time_game, generate_pacgum,
+                       find_player_spawn, generate_super_pacgum)
 
 if TYPE_CHECKING:
     from src.ui import GameWindow
 
 import curses
 import time
-
-
-def find_player_spawn(
-    maze: list[list[int]],
-) -> tuple[int, int]:
-    height: int = len(maze)
-    width: int = len(maze[0])
-
-    center_x: int = width // 2
-    center_y: int = height // 2
-
-    for radius in range(max(width, height)):
-        for y in range(
-            max(0, center_y - radius),
-            min(height, center_y + radius + 1),
-        ):
-            for x in range(
-                max(0, center_x - radius),
-                min(width, center_x + radius + 1),
-            ):
-                if maze[y][x] != 15:
-                    return x, y
-
-    raise ValueError("No valid player spawn found.")
 
 
 def move_player(
@@ -79,6 +56,7 @@ def run(
     player: Player,
     ghosts: list[Ghost],
     game_state: GameState,
+    config: ParseConfig,
 ) -> None:
     from src.ui import draw_maze, setup_terminal
 
@@ -99,7 +77,6 @@ def run(
     }
 
     last_time: float = time.monotonic()
-
     movement_key: int = -1
 
     while not game_state.game_over:
@@ -109,14 +86,17 @@ def run(
 
         if current_time - last_time >= 1:
             game_state.remaining_time = time_game(
-                game_state.remaining_time)
+                game_state.remaining_time
+            )
             last_time = current_time
 
         if game_state.remaining_time == 0:
             game_state.game_over = True
+            return
 
         if key in (ord("q"), ord("Q")):
-            break
+            return
+
         if key in (
             curses.KEY_UP,
             curses.KEY_RIGHT,
@@ -135,24 +115,45 @@ def run(
             movement_key,
         )
 
+        position_player: tuple[int, int] = (
+            player.y,
+            player.x,
+        )
+
+        for key in game_state.position_super_pacgum:
+            if (position_player == key and
+               game_state.position_super_pacgum[key]):
+
+                game_state.score = (game_state.score +
+                                    config.points_per_super_pacgum)
+
+        for key in game_state.position_pacgum:
+            if position_player == key and game_state.position_pacgum[key]:
+                game_state.score = (game_state.score +
+                                    config.points_per_pacgum)
+            if position_player == key:
+                game_state.position_pacgum[key] = False
+
+        if (any(game_state.position_pacgum.values()) is not True and
+           any(game_state.position_super_pacgum.values) is not True):
+            game_state.level += 1
+            game_state.victory = True
+            return
+
         if game_state.frightened:
             for ghost in ghosts:
                 start: tuple[int, int] = (
                     ghost.y,
                     ghost.x,
                 )
-                target: tuple[int, int] = (
-                    player.y,
-                    player.x,
-                )
 
-                if start == target:
-                    ghosts.remove(ghost)
-                    continue
+                if start == position_player:
+                    game_state.game_over = True
+                    break
 
                 next_pos: tuple[int, int] = to_flee(
                     start,
-                    target,
+                    position_player,
                     last_positions[ghost.name],
                     maze,
                 )
@@ -160,22 +161,22 @@ def run(
                 last_positions[ghost.name] = start
                 ghost.move_to_position(next_pos)
 
+                if (ghost.y, ghost.x) == position_player:
+                    game_state.game_over = True
+                    break
+
         else:
             for ghost in ghosts:
-                start = (
+                start: tuple[int, int] = (
                     ghost.y,
                     ghost.x,
                 )
 
-                position_player: tuple[int, int] = (
-                    player.y,
-                    player.x,
-                )
-
                 if start == position_player:
-                    ghosts.remove(ghost)
-                    continue
+                    game_state.game_over = True
+                    break
 
+                ### Athos
                 if ghost.name == "Athos":
                     road: list[tuple[int, int]] = bfs(
                         start,
@@ -186,8 +187,9 @@ def run(
                     if len(road) > 1:
                         ghost.move_to_position(road[1])
 
+                # ### Porthos
                 elif ghost.name == "Porthos":
-                    target = preshoot(
+                    target: tuple[int, int] = preshoot(
                         position_player,
                         maze,
                     )
@@ -201,6 +203,7 @@ def run(
                     if len(road) > 1:
                         ghost.move_to_position(road[1])
 
+                # ### Dartagnan
                 elif ghost.name == "Dartagnan":
                     next_pos = unpredictable(
                         start,
@@ -210,22 +213,25 @@ def run(
 
                     ghost.move_to_position(next_pos)
 
+                # Aramis
                 else:
                     path: dict[str, int] | None = (
                         ghost.check_path(maze)
                     )
 
-                    if path is None:
-                        continue
+                    if path is not None:
+                        direction: str | None = move_randomly(
+                            path,
+                            last_paths[ghost.name],
+                        )
 
-                    direction: str | None = move_randomly(
-                        path,
-                        last_paths[ghost.name],
-                    )
+                        if direction is not None:
+                            ghost.move_to_direction(direction)
+                            last_paths[ghost.name] = direction
 
-                    if direction is not None:
-                        ghost.move_to_direction(direction)
-                        last_paths[ghost.name] = direction
+                if (ghost.y, ghost.x) == position_player:
+                    game_state.game_over = True
+                    break
 
         draw_maze(
             stdscr,
@@ -241,12 +247,17 @@ def run(
 def create_game(config: ParseConfig
                 ) -> tuple[list[list[int]], Player, list[Ghost], GameState]:
 
+    list_pacgum: dict[tuple[int, int], bool] = {}
+    list_super_pacgum: dict[tuple[int, int], bool] = {}
     game_state = GameState(
         score=0,
+        position_pacgum=list_pacgum,
+        position_super_pacgum=list_super_pacgum,
         level=1,
         remaining_time=config.level_max_time,
         frightened=False,
         game_over=False,
+        victory=False,
         cheat=False,
     )
 
@@ -260,6 +271,9 @@ def create_game(config: ParseConfig
     )
 
     maze: list[list[int]] = generator.maze
+
+    game_state.position_pacgum = generate_pacgum(maze, config.pacgum)
+    game_state.position_super_pacgum = generate_super_pacgum(maze)
 
     player_x: int
     player_y: int
@@ -280,12 +294,8 @@ def create_game(config: ParseConfig
         Ghost(0, 0, (0, 0), "Athos"),
         Ghost(width, 0, (width, 0), "Porthos"),
         Ghost(0, height, (0, height), "Aramis"),
-        Ghost(
-            width,
-            height,
-            (width, height),
-            "Dartagnan",
-        ),
+        Ghost(width, height, (width, height),
+              "Dartagnan"),
     ]
 
     return maze, player, ghosts, game_state

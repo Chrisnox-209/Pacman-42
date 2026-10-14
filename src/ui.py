@@ -36,7 +36,7 @@ GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
 PACGUM_IMAGE: pygame.Surface
 HUD_IMAGE: pygame.Surface
 
-PACMAN_FOLDER = (
+PACMAN_FOLDER: Path = (
     Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
 )
 
@@ -63,7 +63,7 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     global HUD_HEIGHT, TILE_SIZE, PACMAN_SIZE, PACGUM_IMAGE
     global HUD_IMAGE
     screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
-    window_size = (int(screen_width * 0.85), int(screen_height * 0.85))
+    window_size: tuple[int, int] = (int(screen_width * 0.85), int(screen_height * 0.85))
 
     pygame.key.set_repeat(180, 100)
     screen = pygame.display.set_mode(window_size)
@@ -243,17 +243,19 @@ def draw_maze_grid(
     screen: pygame.Surface,
     maze: list[list[int]],
     maze_origin: tuple[int, int],
+    position_pacgum: dict[tuple[int, int], bool],
+    position_super_pacgum: dict[tuple[int, int], bool],
 ) -> None:
     """Draw walls pixel by pixel and open cells as pellets."""
     origin_x, origin_y = maze_origin
-    thickness = scaled(1)
+    thickness: int = scaled(1)
 
     for y, row in enumerate(maze):
         for x, walls in enumerate(row):
-            left = origin_x + x * TILE_SIZE
-            top = origin_y + y * TILE_SIZE
-            right = left + TILE_SIZE
-            bottom = top + TILE_SIZE
+            left: int = origin_x + x * TILE_SIZE
+            top: int = origin_y + y * TILE_SIZE
+            right: int = left + TILE_SIZE
+            bottom: int = top + TILE_SIZE
 
             if walls & NORTH:
                 draw_wall(screen, left, top, TILE_SIZE, thickness)
@@ -268,11 +270,15 @@ def draw_maze_grid(
             if walls & WEST:
                 draw_wall(screen, left, top, thickness, TILE_SIZE)
 
-            if walls != 15:
-                rect = PACGUM_IMAGE.get_rect(
-                    center=cell_center(x, y, maze_origin)
-                )
-                screen.blit(PACGUM_IMAGE, rect)
+            for key, value in position_pacgum.items():
+                if (y, x) == key and value:
+                    rect: pygame.Rect = PACGUM_IMAGE.get_rect(center=cell_center(x, y, maze_origin))
+                    screen.blit(PACGUM_IMAGE, rect)
+
+            for key, value in position_super_pacgum.items():
+                if (y, x) == key and value:
+                    # ### Desiner les superpacgum ici
+                    pass
 
 
 def create_hud_image() -> pygame.Surface:
@@ -375,7 +381,9 @@ def draw_game(
     """Draw the HUD, maze, player, and ghosts for one frame."""
     maze_origin: tuple[int, int] = get_maze_origin(maze)
     draw_hud(screen, fonts, game_state, player)
-    draw_maze_grid(screen, maze, maze_origin)
+    draw_maze_grid(screen, maze, maze_origin,
+                   game_state.position_pacgum,
+                   game_state.position_super_pacgum,)
     draw_player(screen, images, player, maze_origin, animation_frame)
     draw_ghosts(screen, ghosts, maze_origin, game_state.frightened)
 
@@ -594,18 +602,18 @@ def draw_maze(
     game_state: GameState,
 ) -> None:
     """Animate the display during the 300 ms between game updates."""
-    position = (player.x, player.y)
-    moving = (
+    position: tuple[int, int] = (player.x, player.y)
+    moving: bool = (
         window.last_player_position is not None
         and position != window.last_player_position
     )
     window.last_player_position = position
     clock = pygame.time.Clock()
-    start = pygame.time.get_ticks()
+    start: int = pygame.time.get_ticks()
 
     while not window.closed:
         window.pending_key = window.getch()
-        elapsed = pygame.time.get_ticks() - start
+        elapsed: int = pygame.time.get_ticks() - start
         if window.closed or elapsed >= 300:
             break
 
@@ -682,6 +690,7 @@ def wrapper(
                     player,
                     ghosts,
                     game_state,
+                    config,
                 )
                 if window.closed:
                     break

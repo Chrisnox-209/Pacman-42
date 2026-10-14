@@ -132,7 +132,6 @@ class ParseConfig(BaseModel):
     speed_player: int = 10
     speed_ghosts: int = 9
     pacgum: int = 100
-    super_pacgums: int = 4
     points_per_pacgum: int = 1
     points_per_super_pacgum: int = 10
     points_per_ghost: int = 15
@@ -196,7 +195,7 @@ class ParseConfig(BaseModel):
     @field_validator("pacgum", mode="before")
     @classmethod
     def check_pacgum(cls, value: Any) -> int:
-        if type(value) is not int or value < 10 or value > 100:
+        if type(value) is not int or value < 1 or value > 100:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
                 f"{Color.RED.value}(pacgum: {value})"
@@ -206,22 +205,6 @@ class ParseConfig(BaseModel):
                 f"{Color.GREEN.value}pacgum = 100"
             )
             return 100
-
-        return value
-
-    @field_validator("super_pacgums", mode="before")
-    @classmethod
-    def check_super_pacgums(cls, value: Any) -> int:
-        if type(value) is not int or value < 4:
-            print(
-                f"\n{Color.ORANGE.value}[WARN] "
-                f"{Color.RED.value}(super_pacgums: {value})"
-                f"{Color.RST.value} Super pacgums must be an integer "
-                "equal to or greater than 4\n"
-                f"{Color.MAGENTA.value}[Default value] "
-                f"{Color.GREEN.value}super_pacgums = 4"
-            )
-            return 4
 
         return value
 
