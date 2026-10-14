@@ -129,18 +129,16 @@ class LevelConfig(BaseModel):
 
 
 def default_levels() -> list[LevelConfig]:
-    return [
-        LevelConfig(width=20, height=20),
-        LevelConfig(width=22, height=20),
-        LevelConfig(width=24, height=20),
-        LevelConfig(width=26, height=20),
-        LevelConfig(width=28, height=20),
-        LevelConfig(width=30, height=20),
-        LevelConfig(width=32, height=20),
-        LevelConfig(width=34, height=20),
-        LevelConfig(width=36, height=20),
-        LevelConfig(width=40, height=20),
-    ]
+    return [LevelConfig(width=20, height=20, escape_time=6),
+            LevelConfig(width=22, height=20, escape_time=5),
+            LevelConfig(width=24, height=20, escape_time=4),
+            LevelConfig(width=26, height=20, escape_time=3),
+            LevelConfig(width=28, height=20, escape_time=2),
+            LevelConfig(width=30, height=20, escape_time=5),
+            LevelConfig(width=32, height=20, escape_time=2),
+            LevelConfig(width=34, height=20, escape_time=2),
+            LevelConfig(width=36, height=20, escape_time=1),
+            LevelConfig(width=40, height=20, escape_time=0),]
 
 
 class ParseConfig(BaseModel):
