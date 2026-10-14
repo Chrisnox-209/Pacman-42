@@ -168,7 +168,7 @@ def load_ghost_images() -> None:
     for name in ("Athos", "Porthos", "Aramis", "Dartagnan"):
         folder = PACMAN_FOLDER.parent / "ghosts" / name.lower()
         GHOST_IMAGES[name] = {}
-        for state in ("normal", "frightened"):
+        for state in ("normal", "frightened", "returning"):
             image = pygame.image.load(folder / f"{state}.png").convert_alpha()
             GHOST_IMAGES[name][state] = resize_image(
                 image, (TILE_SIZE, TILE_SIZE)
@@ -372,9 +372,9 @@ def draw_ghosts(
 ) -> None:
     for ghost in ghosts:
         if ghost.state == "dead":
-            continue
+            state = "returning"
 
-        if ghost.state == "frightened":
+        elif ghost.state == "frightened":
             state = "frightened"
         else:
             state = "normal"
