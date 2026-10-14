@@ -55,7 +55,7 @@
 	# number of lives
     "lives": 3,
     "speed_player": 10,
-    "speed_ghosts": 10,
+    "speed_ghosts": 1,
 	"pacgum": 42,
     "points_per_pacgum": 10,
     "points_per_super_pacgum": 50,
