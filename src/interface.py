@@ -86,9 +86,9 @@ def create_game(config: ParseConfig
 
     ghosts: list[Ghost] = [
         Ghost(0, 0, (0, 0), "Athos", "normal"),
-        Ghost(width, 0, (width, 0), "Porthos", "normal"),
-        Ghost(0, height, (0, height), "Aramis", "normal"),
-        Ghost(width, height, (width, height),
+        Ghost(width, 0, (0, width), "Porthos", "normal"),
+        Ghost(0, height, (height, 0), "Aramis", "normal"),
+        Ghost(width, height, (height, width),
               "Dartagnan", "normal"),
     ]
 
