@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from src.interface import create_game, run
+from src.run import run
+from src.interface import create_game
 from src.game import Player, GameState
 from src.ghost import Ghost
 from pydantic import ValidationError
