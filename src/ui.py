@@ -337,6 +337,33 @@ def draw_hud(
         )
 
 
+def draw_cheat_menu(
+    screen: pygame.Surface,
+    fonts: FontSet,
+    noclip: bool,
+    invisible: bool,
+    next_level_requested: bool,
+) -> None:
+    """Display cheat controls and their interface states."""
+    screen.blit(HUD_IMAGE, (0, 0))
+
+    title = render_text(fonts["title"], "CHEATS")
+    screen.blit(title, (scaled(28), scaled(15)))
+
+    noclip_status = "ON" if noclip else "OFF"
+    invisible_status = "ON" if invisible else "OFF"
+    level_status = "OK" if next_level_requested else "-"
+
+    text = (
+        f"N:No clip {noclip_status}  "
+        f"L:Next {level_status}  "
+        f"I:Invisible {invisible_status}"
+    )
+
+    image = render_text(fonts["text"], text)
+    screen.blit(image, (scaled(28), scaled(42)))
+
+
 def get_player_facing(direction: tuple[int, int]) -> str:
     """Convert the player's (dx, dy) direction to a sprite-facing name."""
     directions: dict[tuple[int, int], str] = {
@@ -554,6 +581,10 @@ class GameWindow:
         self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
         self.return_to_menu = False
+        self.show_cheats = False
+        self.noclip_enabled = False
+        self.invisible_enabled = False
+        self.next_level_requested = False
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -577,6 +608,15 @@ class GameWindow:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.closed = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_c:
+                    self.show_cheats = not self.show_cheats
+                elif event.key == pygame.K_n:
+                    self.noclip_enabled = not self.noclip_enabled
+                elif event.key == pygame.K_i:
+                    self.invisible_enabled = not self.invisible_enabled
+                elif event.key == pygame.K_l:
+                    self.next_level_requested = not self.next_level_requested
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     self.closed = True
@@ -665,6 +705,14 @@ def draw_maze(
             game_state,
             window.animation_frame,
         )
+        if window.show_cheats:
+            draw_cheat_menu(
+                window.screen,
+                window.fonts,
+                window.noclip_enabled,
+                window.invisible_enabled,
+                window.next_level_requested,
+            )
         window.refresh()
         frame_elapsed = time.perf_counter() - frame_start
         time.sleep(max(0, 1 / 60 - frame_elapsed))
@@ -709,6 +757,10 @@ def wrapper(
                     ):
                         maze, player, ghosts, game_state = create_game(config)
                         window.last_player_position = None
+                        window.show_cheats = False
+                        window.noclip_enabled = False
+                        window.invisible_enabled = False
+                        window.next_level_requested = False
                         window.animation_frame = 0
                         window.pending_key = -1
                     running, current_screen, selected_option = handle_key(
@@ -735,6 +787,10 @@ def wrapper(
                     window.return_to_menu = False
                     maze, player, ghosts, game_state = create_game(config)
                     window.last_player_position = None
+                    window.show_cheats = False
+                    window.noclip_enabled = False
+                    window.invisible_enabled = False
+                    window.next_level_requested = False
                     window.animation_frame = 0
                     window.pending_key = -1
                     current_screen = "menu"
