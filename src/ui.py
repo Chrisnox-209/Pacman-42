@@ -502,7 +502,11 @@ def draw_message(
             ),
         )
 
-    footer = render_text(fonts["text"], "ENTER or ESC: return")
+    if title == "GAME OVER":
+        help_text = "ENTER: confirm name"
+    else:
+        help_text = "ENTER or ESC: return"
+    footer = render_text(fonts["text"], help_text)
     screen.blit(
         footer,
         footer.get_rect(center=(WINDOW_WIDTH // 2,
@@ -585,6 +589,7 @@ class GameWindow:
         self.noclip_enabled = False
         self.invisible_enabled = False
         self.next_level_requested = False
+        self.player_name = ""
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -752,8 +757,33 @@ def wrapper(
                 if event.type == pygame.QUIT:
                     window.closed = True
                 elif event.type == pygame.KEYDOWN:
+                    if current_screen == "game_over":
+                        if event.key == pygame.K_BACKSPACE:
+                            window.player_name = window.player_name[:-1]
+                            continue
+                        if event.key in (
+                            pygame.K_RETURN, pygame.K_KP_ENTER
+                        ):
+                            if not window.player_name.strip():
+                                continue
+                            window.player_name = window.player_name.strip()
+                        else:
+                            character = event.unicode
+                            if (
+                                len(character) == 1
+                                and len(window.player_name) < 10
+                                and (
+                                    (
+                                        character.isascii()
+                                        and character.isalnum()
+                                    )
+                                    or character == " "
+                                )
+                            ):
+                                window.player_name += character
+                            continue
                     if current_screen == "game_over" and event.key in (
-                        pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_ESCAPE
+                        pygame.K_RETURN, pygame.K_KP_ENTER
                     ):
                         maze, player, ghosts, game_state = create_game(config)
                         window.last_player_position = None
@@ -795,6 +825,7 @@ def wrapper(
                     window.pending_key = -1
                     current_screen = "menu"
                 else:
+                    window.player_name = ""
                     current_screen = "game_over"
                 continue
 
@@ -810,6 +841,15 @@ def wrapper(
                 game_state,
                 window.animation_frame,
             )
+            if current_screen == "game_over":
+                name_image = render_text(
+                    window.fonts["text"], f"Name: {window.player_name}"
+                )
+                width, _ = name_image.get_size()
+                window.screen.blit(
+                    name_image,
+                    ((WINDOW_WIDTH - width) // 2, scaled(390)),
+                )
             window.refresh()
             frame_elapsed = time.perf_counter() - frame_start
             time.sleep(max(0, 1 / 60 - frame_elapsed))
