@@ -147,6 +147,7 @@ class ParseConfig(BaseModel):
     lives: int = 3
     speed_player: int = 10
     speed_ghosts: int = 9
+    time_respawn_ghost: int = 3
     pacgum: int = 100
     points_per_pacgum: int = 1
     points_per_super_pacgum: int = 10
@@ -333,6 +334,23 @@ class ParseConfig(BaseModel):
                 f"{Color.GREEN.value}{info.field_name} = {default_speed}"
             )
             return default_speed
+
+        return value
+
+    @field_validator("time_respawn_ghost", mode="before")
+    @classmethod
+    def check_escape_time(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError(
+                f"\n{Color.BLUE.value}[INFO]"
+                f"{Color.RST.value} time_respawn_ghost must be <= 0"
+            )
+
+        if value > 5:
+            raise ValueError(
+                f"\n{Color.BLUE.value}[INFO]"
+                f"{Color.RST.value} time_respawn_ghost must be >= 5"
+            )
 
         return value
 
