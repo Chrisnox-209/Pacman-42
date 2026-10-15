@@ -620,6 +620,7 @@ class GameWindow:
                     self.noclip_enabled = not self.noclip_enabled
                 elif event.key == pygame.K_i:
                     self.invisible_enabled = not self.invisible_enabled
+                    print("INVISIBLE:", self.invisible_enabled)
                 elif event.key == pygame.K_l:
                     self.next_level_requested = not self.next_level_requested
             elif event.type == pygame.KEYDOWN:

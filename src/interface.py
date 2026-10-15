@@ -14,26 +14,33 @@ def move_player(
     maze: list[list[int]],
     player: Player,
     key: int,
+    noclip: bool = False,
 ) -> None:
     wall: int = maze[player.y][player.x]
 
     if key in (curses.KEY_UP, ord("w")):
-        if wall & 1 == 0:
+        if player.y > 0 and (noclip or wall & 1 == 0):
             player.y -= 1
             player.direction = (0, -1)
 
     elif key in (curses.KEY_RIGHT, ord("d")):
-        if wall & 2 == 0:
+        if (
+            player.x < len(maze[player.y]) - 1
+            and (noclip or wall & 2 == 0)
+        ):
             player.x += 1
             player.direction = (1, 0)
 
     elif key in (curses.KEY_DOWN, ord("s")):
-        if wall & 4 == 0:
+        if (
+            player.y < len(maze) - 1
+            and (noclip or wall & 4 == 0)
+        ):
             player.y += 1
             player.direction = (0, 1)
 
     elif key in (curses.KEY_LEFT, ord("a")):
-        if wall & 8 == 0:
+        if player.x > 0 and (noclip or wall & 8 == 0):
             player.x -= 1
             player.direction = (-1, 0)
 

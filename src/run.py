@@ -74,16 +74,11 @@ def update_pacgums_and_frightened(player: Player, ghosts: list[Ghost],
 
 
 def check_victory(game_state: GameState, ) -> bool:
-    for is_present in game_state.position_pacgum.values():
-        if is_present is True:
-            return False
+    if any(game_state.position_pacgum.values()) is True:
+        return False
 
-    for is_present in game_state.position_super_pacgum.values():
-        if is_present is True:
-            return False
-
-    game_state.level += 1
-    game_state.victory = True
+    if any(game_state.position_super_pacgum.values()) is True:
+        return False
     return True
 
 
@@ -136,6 +131,7 @@ def move_ghost(ghost: Ghost, player: Player, maze: list[list[int]],
 
     elif ghost.state == "normal":
         if ghost.name == "Athos":
+
             road = bfs(start, position_player, maze)
             if len(road) > 1:
                 ghost.move_to_position(road[1])
@@ -210,6 +206,13 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
         key: int = stdscr.getch()
         current_time: float = time.monotonic()
 
+        if stdscr.next_level_requested:
+            stdscr.next_level_requested = False
+            game_state.cheat = True
+            game_state.level += 1
+            game_state.victory = True
+            return
+
         if current_time - last_time >= 1:
             game_state.remaining_time = time_game(game_state.remaining_time)
             last_time = current_time
@@ -234,7 +237,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
             movement_key = key
 
         if current_time - last_player_move >= player_delay:
-            move_player(maze, player, movement_key)
+            move_player(maze, player, movement_key, stdscr.noclip_enabled,)
             last_player_move = current_time
 
         frightened_start_time = update_pacgums_and_frightened(
@@ -248,10 +251,16 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
         )
 
         for ghost in ghosts:
+
+            if stdscr.invisible_enabled and ghost.state == "normal":
+                continue
             if check_collision(ghost, player, game_state, config):
                 return
 
         if check_victory(game_state):
+            game_state.level += 1
+            if game_state.level > 10:
+                game_state.victory = True
             return
 
         move_ghosts: bool = current_time - last_ghost_move >= ghost_delay
@@ -268,10 +277,9 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                        last_paths, ghost_respawn_time,
                        current_time, config.time_respawn_ghost,
                        game_state.frightened)
-
-            if check_collision(ghost, player, game_state, config):
-                return
-
+            if not (stdscr.invisible_enabled and ghost.state == "normal"):
+                if check_collision(ghost, player, game_state, config):
+                    return
         if move_ghosts:
             last_ghost_move = current_time
 
