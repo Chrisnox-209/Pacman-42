@@ -7,6 +7,7 @@ from src.parse import ParseConfig, LevelConfig
 from src.utils import (generate_pacgum,
                        find_player_spawn, generate_super_pacgum)
 
+from typing import Any
 import curses
 
 
@@ -65,11 +66,17 @@ def create_game(config: ParseConfig
     level_index: int = game_state.level - 1
     level: LevelConfig = config.levels[level_index]
 
-    generator = MazeGenerator(
-        size=(level.width, level.height),
-        perfect=config.perfect,
-        seed=config.seed,
-    )
+    if game_state.level == 1:
+        generator: Any = MazeGenerator(
+            size=(level.width, level.height),
+            perfect=config.perfect,
+            seed=config.seed,
+        )
+    else:
+        generator = MazeGenerator(
+            size=(level.width, level.height),
+            perfect=config.perfect,
+        )
 
     maze: list[list[int]] = generator.maze
 
