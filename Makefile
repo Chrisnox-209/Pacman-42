@@ -6,7 +6,7 @@ FLAKE_STRICT = --max-complexity=30
 MAIN = src/__main__.py
 CONFIG = config.json
 
-.PHONY: all install run clean lint lint-strict debug build
+.PHONY: all install run clean lint lint-strict debug build clean-package clean-all
 
 all: run
 
@@ -28,6 +28,18 @@ clean-package:
 	@rm -rf build
 	@rm -rf dist
 	@rm Pacman-42.spec
+	@echo "The package is deleted."
+
+clean-all:
+	@rm -Rf .venv
+	@rm -Rf __pycache__
+	@rm -Rf src/__pycache__
+	@rm -Rf .mypy_cache
+	@rm -Rf uv.lock
+	@rm -rf build
+	@rm -rf dist
+	@rm Pacman-42.spec
+	@echo "All code clean"
 	@echo "The package is deleted."
 
 lint:

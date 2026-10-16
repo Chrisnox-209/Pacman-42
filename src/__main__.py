@@ -40,6 +40,9 @@ def main(file_config: str | None) -> None:
 
     try:
         file_score: Path = config.highscore_filename
+        if getattr(sys, "frozen", False) and not file_score.is_absolute():
+            file_score = Path.home() / ".pacman-42" / file_score
+        file_score.parent.mkdir(parents=True, exist_ok=True)
         scores: ParseHighScore = highscore_to_data(file_score)
     except ValidationError as error:
         print(f"\n{Color.RED.value}[ERROR FILE SCORE]"
