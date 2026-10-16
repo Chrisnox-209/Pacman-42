@@ -274,7 +274,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                     return
                 reset_positions(player, ghosts, last_positions, last_paths)
                 movement_key = -1
-                now = time.monotonic()
+                now: float = time.monotonic()
                 last_player_move = now
                 last_ghost_move = now
                 last_dead_move = now
@@ -313,7 +313,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                         return
                     reset_positions(player, ghosts, last_positions, last_paths)
                     movement_key = -1
-                    now: float = time.monotonic()
+                    now = time.monotonic()
                     last_player_move = now
                     last_ghost_move = now
                     last_dead_move = now
