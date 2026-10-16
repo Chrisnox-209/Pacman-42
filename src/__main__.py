@@ -15,14 +15,17 @@ from pydantic import ValidationError
 import sys
 
 
-def main(file_config: str) -> None:
+def main(file_config: str | None) -> None:
     maze: list[list[int]]
     player: Player
     ghosts: list[Ghost]
     game_state: GameState
 
     try:
-        config: ParseConfig = json_to_data(file_config)
+        if file_config is None:
+            config: ParseConfig = ParseConfig()
+        else:
+            config = json_to_data(file_config)
     except ValidationError as error:
         print(f"\n{Color.RED.value}[ERROR CONFIG]"
               f"{Color.ORANGE.value}",
@@ -55,13 +58,15 @@ def main(file_config: str) -> None:
 
 
 def cli() -> None:
-    if len(sys.argv) > 1 and len(sys.argv) <= 2:
-        file_config: str = sys.argv[1]
-    else:
-        print(f"\n{Color.RED.value}[ERROR] {Color.RST.value}"
-              "The configuration file argument is missing.")
-        sys.exit(1)
+    if getattr(sys, "frozen", False) and len(sys.argv) == 1:
+        file_config: str | None = None
 
+    elif len(sys.argv) == 2:
+        file_config = sys.argv[1]
+
+    else:
+        print("ERROR: Configuration argument is missing or invalid.")
+        sys.exit(1)
     try:
         main(file_config)
 

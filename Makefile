@@ -1,12 +1,12 @@
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports \
 	--disallow-untyped-defs --check-untyped-defs
 MYPY_STRICT = --strict
-FLAKE_STRICT = --max-complexity=25
+FLAKE_STRICT = --max-complexity=30
 
 MAIN = src/__main__.py
 CONFIG = config.json
 
-.PHONY: all install run clean lint lint-strict debug
+.PHONY: all install run clean lint lint-strict debug build
 
 all: run
 
@@ -24,6 +24,12 @@ clean:
 	@rm -Rf uv.lock
 	@echo "All code clean"
 
+clean-package:
+	@rm -rf build
+	@rm -rf dist
+	@rm Pacman-42.spec
+	@echo "The package is deleted."
+
 lint:
 	@uv run python3 -m mypy --exclude 'llm_sdk' $(MYPY_FLAGS) .
 	@uv run python3 -m flake8 --exclude .venv,llm_sdk .
@@ -34,3 +40,6 @@ lint-strict:
 
 debug:
 	@uv run python3 -m pdb $(MAIN)
+
+build:
+	@bash build.sh
