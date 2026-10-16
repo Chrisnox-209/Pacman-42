@@ -83,7 +83,7 @@ def create_game(config: ParseConfig
     player = Player(
         x=player_x,
         y=player_y,
-        spawn_position=(player_x, player_y),
+        spawn_position=(player_y, player_x),
         direction=(1, 0),
         lives=config.lives,
     )
