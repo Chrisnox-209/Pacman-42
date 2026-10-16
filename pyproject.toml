@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-pacman-42 = "src.__main__:main"
+pacman-42 = "src.__main__:cli"
 
 [build-system]
 requires = ["uv_build>=0.12.20,<0.13.0"]

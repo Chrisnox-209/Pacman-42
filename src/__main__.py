@@ -53,7 +53,7 @@ def main(file_config: str) -> None:
             game_state, config, scores)
 
 
-if __name__ == "__main__":
+def cli() -> None:
     if len(sys.argv) > 1 and len(sys.argv) <= 2:
         file_config: str = sys.argv[1]
     else:
@@ -72,3 +72,7 @@ if __name__ == "__main__":
         print(f"\n{Color.RED.value}[CRITICAL ERROR]{Color.RST.value} {e}",
               file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    cli()
