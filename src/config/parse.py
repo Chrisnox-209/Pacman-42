@@ -6,7 +6,7 @@ from pydantic import (BaseModel, Field,
                       ValidationError, ValidationInfo,
                       field_validator)
 
-from src.utils import Color
+from src.common.utils import Color
 
 
 class ConfigPathError(Exception):

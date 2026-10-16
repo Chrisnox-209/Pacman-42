@@ -1,11 +1,12 @@
 
 from mazegenerator import MazeGenerator
 
-from src.ghost import Ghost
-from src.game import Player, GameState
-from src.parse import ParseConfig, LevelConfig
-from src.utils import (generate_pacgum,
-                       find_player_spawn, generate_super_pacgum)
+from src.models.ghost import Ghost
+from src.models.game import Player, GameState
+from src.config.parse import ParseConfig, LevelConfig
+from src.common.utils import (generate_pacgum,
+                              find_player_spawn,
+                              generate_super_pacgum)
 
 from typing import Any
 import curses

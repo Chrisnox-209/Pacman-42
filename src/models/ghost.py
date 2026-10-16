@@ -1,4 +1,4 @@
-from src.utils import convert_wall
+from src.common.utils import convert_wall
 
 
 class Ghost:

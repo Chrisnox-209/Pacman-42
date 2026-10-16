@@ -1,4 +1,4 @@
-from src.utils import possible_neighbor, mirror_path
+from src.common.utils import possible_neighbor, mirror_path
 from collections import deque
 import random
 

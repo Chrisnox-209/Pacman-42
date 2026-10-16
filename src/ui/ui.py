@@ -7,10 +7,10 @@ import curses
 import time
 import pygame
 
-from src.parse import ParseConfig, ParseHighScore
-from src.game import GameState, Player
-from src.ghost import Ghost
-from src.interface import create_game
+from src.config.parse import ParseConfig, ParseHighScore
+from src.models.game import GameState, Player
+from src.models.ghost import Ghost
+from src.gameplay.interface import create_game
 
 
 WINDOW_WIDTH = 800
@@ -38,11 +38,9 @@ Super_PACGUM_IMAGE = pygame.Surface((1, 1))
 HUD_IMAGE = pygame.Surface((1, 1))
 BACKGROUND_IMAGE = pygame.Surface((1, 1))
 
-PACMAN_FOLDER: Path = (
-    Path(__file__).parent.parent / "assets" / "geometric" / "pacman"
-)
-
-FONT_FOLDER = Path(__file__).parent.parent / "assets" / "font"
+ASSETS_FOLDER: Path = Path(__file__).resolve().parents[2] / "assets"
+PACMAN_FOLDER: Path = ASSETS_FOLDER / "geometric" / "pacman"
+FONT_FOLDER: Path = ASSETS_FOLDER / "font"
 TITLE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ -?"
 TEXT_CHARACTERS = "".join(chr(code) for code in range(32, 127))
 FONT_COLUMNS = 16

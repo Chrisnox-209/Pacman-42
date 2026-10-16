@@ -2,21 +2,19 @@ from typing import TYPE_CHECKING
 import curses
 import time
 
-from src.ghost import Ghost
-from src.game import Player, GameState
-from src.parse import ParseConfig, LevelConfig
-from src.interface import move_player
-from src.algorithm import (
-    bfs,
-    move_randomly,
-    preshoot,
-    to_flee,
-    unpredictable,
-)
-from src.utils import time_game
+from src.models.ghost import Ghost
+from src.models.game import Player, GameState
+from src.config.parse import ParseConfig, LevelConfig
+from src.gameplay.interface import move_player
+from src.ai.algorithm import (bfs,
+                              move_randomly,
+                              preshoot,
+                              to_flee,
+                              unpredictable,)
+from src.common.utils import time_game
 
 if TYPE_CHECKING:
-    from src.ui import GameWindow
+    from src.ui.ui import GameWindow
 
 
 def check_collision(ghost: Ghost, player: Player,
@@ -176,7 +174,7 @@ def move_ghost(ghost: Ghost, player: Player, maze: list[list[int]],
 def run(stdscr: "GameWindow", maze: list[list[int]],
         player: Player, ghosts: list[Ghost],
         game_state: GameState, config: ParseConfig) -> None:
-    from src.ui import draw_maze, setup_terminal
+    from src.ui.ui import draw_maze, setup_terminal
 
     setup_terminal(stdscr)
 

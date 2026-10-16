@@ -4,8 +4,8 @@ import curses
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.game import GameState, Player
-    from src.ghost import Ghost
+    from src.models.game import GameState, Player
+    from src.models.ghost import Ghost
 
 
 NORTH = 1

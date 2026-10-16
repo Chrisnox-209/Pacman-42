@@ -1,16 +1,17 @@
 from pathlib import Path
 
-from src.run import run
-from src.interface import create_game
-from src.game import Player, GameState
-from src.ghost import Ghost
+from src.gameplay.run import run
+from src.gameplay.interface import create_game
+from src.models.game import Player, GameState
+from src.models.ghost import Ghost
+from src.ui.ui import wrapper
+from src.common.utils import Color
+from src.config.parse import (ParseConfig,
+                              ParseHighScore,
+                              json_to_data,
+                              highscore_to_data)
+
 from pydantic import ValidationError
-from src.ui import wrapper
-from src.utils import Color
-from src.parse import (ParseConfig,
-                       ParseHighScore,
-                       json_to_data,
-                       highscore_to_data)
 import sys
 
 
