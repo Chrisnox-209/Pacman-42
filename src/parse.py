@@ -431,10 +431,16 @@ def json_to_data(file: str) -> ParseConfig:
 def highscore_to_data(file: Path) -> ParseHighScore:
     try:
         with open(file, "r", encoding="utf8") as content:
-            score_data: object = json.load(content)
+
+            text: str = content.read()
+            if not text.strip():
+                return ParseHighScore(highscore=[])
+
+            score_data: object = json.loads(text)
             return ParseHighScore.model_validate(score_data)
 
     except FileNotFoundError:
+        file.write_text('{"highscore": []}', encoding="utf-8")
         print(
             f"\n{Color.ORANGE.value}[WARN] "
             f"{Color.RED.value}(highscore_filename: {file})"
