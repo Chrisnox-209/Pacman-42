@@ -20,12 +20,11 @@ if TYPE_CHECKING:
 
 
 def check_collision(ghost: Ghost, player: Player,
-                    game_state: GameState, config: ParseConfig,
-                    player_dead: bool) -> bool:
+                    game_state: GameState, config: ParseConfig) -> bool:
     if (ghost.y, ghost.x) == (player.y, player.x):
         if ghost.state == "frightened":
             ghost.state = "dead"
-            game_state.score = game_state.score + config.points_per_ghost
+            game_state.score += config.points_per_ghost
             return False
 
         if ghost.state == "normal":
@@ -39,9 +38,11 @@ def check_collision(ghost: Ghost, player: Player,
 
 def reset_positions(player: Player, ghosts: list[Ghost],
                     last_positions: dict[str, tuple[int, int] | None],
-                    last_paths: dict[str, str | None]) -> None:
+                    last_paths: dict[str, str | None],
+                    ghost_respawn_time: dict[str, float | None]) -> None:
     player.y = player.spawn_position[0]
     player.x = player.spawn_position[1]
+    player.direction = (1, 0)
 
     for ghost in ghosts:
         ghost.y = ghost.spawn_position[0]
@@ -49,6 +50,7 @@ def reset_positions(player: Player, ghosts: list[Ghost],
         ghost.state = "normal"
         last_positions[ghost.name] = None
         last_paths[ghost.name] = None
+        ghost_respawn_time[ghost.name] = None
 
 
 def update_pacgums_and_frightened(player: Player, ghosts: list[Ghost],
@@ -103,7 +105,6 @@ def move_ghost(ghost: Ghost, player: Player, maze: list[list[int]],
                ghost_respawn_time: dict[str, float | None],
                current_time: float, time_respawn: int,
                frightened: bool) -> None:
-
     start: tuple[int, int] = (ghost.y, ghost.x)
     position_player: tuple[int, int] = (player.y, player.x)
 
@@ -177,7 +178,6 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
         game_state: GameState, config: ParseConfig) -> None:
     from src.ui import draw_maze, setup_terminal
 
-    player_dead: bool = False
     setup_terminal(stdscr)
 
     last_player_move: float = time.monotonic()
@@ -217,6 +217,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
     level: LevelConfig = config.levels[level_index]
 
     while not game_state.game_over:
+        player_dead: bool = False
         key: int = stdscr.getch()
         current_time: float = time.monotonic()
 
@@ -224,7 +225,8 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
             stdscr.next_level_requested = False
             game_state.cheat = True
             game_state.level += 1
-            game_state.victory = True
+            if game_state.level > len(config.levels):
+                game_state.victory = True
             return
 
         if movement_key != -1 and current_time - last_time >= 1:
@@ -269,10 +271,11 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
             if stdscr.invisible_enabled and ghost.state == "normal":
                 continue
 
-            if check_collision(ghost, player, game_state, config, player_dead):
+            if check_collision(ghost, player, game_state, config):
                 if game_state.game_over:
                     return
-                reset_positions(player, ghosts, last_positions, last_paths)
+                reset_positions(player, ghosts, last_positions, last_paths,
+                                ghost_respawn_time)
                 movement_key = -1
                 now: float = time.monotonic()
                 last_player_move = now
@@ -280,11 +283,15 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                 last_dead_move = now
                 last_time = now
                 draw_maze(stdscr, maze, player, ghosts, game_state)
+                player_dead = True
                 break
+
+        if player_dead:
+            continue
 
         if check_victory(game_state):
             game_state.level += 1
-            if game_state.level > 10:
+            if game_state.level > len(config.levels):
                 game_state.victory = True
             return
 
@@ -307,11 +314,11 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                        game_state.frightened)
 
             if not (stdscr.invisible_enabled and ghost.state == "normal"):
-                if check_collision(ghost, player, game_state,
-                                   config, player_dead):
+                if check_collision(ghost, player, game_state, config):
                     if game_state.game_over:
                         return
-                    reset_positions(player, ghosts, last_positions, last_paths)
+                    reset_positions(player, ghosts, last_positions, last_paths,
+                                    ghost_respawn_time)
                     movement_key = -1
                     now = time.monotonic()
                     last_player_move = now
@@ -319,7 +326,11 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                     last_dead_move = now
                     last_time = now
                     draw_maze(stdscr, maze, player, ghosts, game_state)
+                    player_dead = True
                     break
+
+        if player_dead:
+            continue
 
         if move_ghosts:
             last_ghost_move = current_time
