@@ -46,22 +46,26 @@ def move_player(
             player.direction = (-1, 0)
 
 
-def create_game(config: ParseConfig
+def create_game(config: ParseConfig, level_number: int = 1,
+                score: int = 0, lives: int | None = None
                 ) -> tuple[list[list[int]], Player, list[Ghost], GameState]:
 
     list_pacgum: dict[tuple[int, int], bool] = {}
     list_super_pacgum: dict[tuple[int, int], bool] = {}
     game_state = GameState(
-        score=0,
+        score=score,
         position_pacgum=list_pacgum,
         position_super_pacgum=list_super_pacgum,
-        level=1,
+        level=level_number,
         remaining_time=config.level_max_time,
         frightened=False,
         game_over=False,
         victory=False,
         cheat=False,
     )
+
+    if not 1 <= level_number <= len(config.levels):
+        raise ValueError("Invalid level number")
 
     level_index: int = game_state.level - 1
     level: LevelConfig = config.levels[level_index]
@@ -92,7 +96,7 @@ def create_game(config: ParseConfig
         y=player_y,
         spawn_position=(player_y, player_x),
         direction=(1, 0),
-        lives=config.lives,
+        lives=config.lives if lives is None else lives,
     )
 
     height: int = len(maze) - 1
