@@ -1,0 +1,36 @@
+PACMAN-42
+=========
+
+LAUNCH (LINUX)
+  Extract the complete ZIP archive first.
+  Open a terminal in the extracted Pacman-42 folder, then run:
+
+    ./Pacman-42
+
+  The executable uses built-in default settings when no argument is given.
+  Keep the _internal/ directory alongside the executable.
+  This build is for Linux; it is not a Windows .exe or a macOS application.
+
+CONTROLS
+  Arrow keys / W A S D   Move Pac-Man
+  Up / Down              Navigate the main menu
+  Enter                  Confirm a menu selection
+  Escape                 Pause during a game
+  Enter (while paused)   Resume
+  Escape (while paused)  Return to the main menu
+  Q                      Quit during gameplay or from the pause screen
+  Backspace              Delete a character when entering a name
+
+CHEATS
+  C    Show or hide the cheat menu
+  N    Toggle noclip (move through walls)
+  I    Toggle invisibility to normal ghosts
+  L    Request the next level
+
+HIGHSCORES
+  In the packaged Linux version, relative highscore filenames are placed in:
+
+    ~/.pacman-42/
+
+  With the default setting, the file is ~/.pacman-42/scores.json.
+  The file is initialized automatically if it is missing.

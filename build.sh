@@ -22,3 +22,15 @@ echo -e "\n${RED}=== building the executable ... ===${RST}\n"
 echo -e "\n${GREEN}╭───────────────────────────────────────────────────╮"
 echo -e "│   ✔ Pacman-42 has been successfully compiled !    │"
 echo -e "╰───────────────────────────────────────────────────╯${RST}\n"
+
+echo -e "\n${RED}=== Copying package files ... ===${RST}\n"
+
+cp .packaging/INSTRUCTIONS.txt dist/Pacman-42/
+
+cd dist && zip -r -y Pacman-42-Linux.zip Pacman-42/
+
+echo -e "\n${GREEN}╭─────────────────────────────────────────────────────────╮"
+echo -e "│    ✔ The complete procedure involves the zip archive    │"
+echo -e "│              located in the {dist} folder.              │"
+echo -e "╰─────────────────────────────────────────────────────────╯${RST}\n"
+
