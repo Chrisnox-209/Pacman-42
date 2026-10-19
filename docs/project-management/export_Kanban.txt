@@ -1,0 +1,36 @@
+uv run python - <<'PY'
+import json
+from pathlib import Path
+
+issues = json.loads(Path("issues.json").read_text(encoding="utf-8"))
+
+lignes = [
+    "# Pacman-42 — Issue Tracking",
+    "",
+    f"Total issues: {len(issues)}",
+    "",
+    "| Issue | Status | Assigned to | Created | Closed |",
+    "|---|---|---|---|---|",
+]
+
+for issue in sorted(issues, key=lambda x: x["number"]):
+    numero = issue["number"]
+    titre = issue["title"].replace("|", "\\|")
+    lien = issue["url"]
+    statut = issue["state"]
+    responsables = ", ".join(issue["assignees"]) or "Unassigned"
+    creation = issue["created_at"][:10]
+    fermeture = (issue["closed_at"] or "-")[:10]
+
+    lignes.append(
+        f"| [#{numero} — {titre}]({lien}) | {statut} | "
+        f"{responsables} | {creation} | {fermeture} |"
+    )
+
+Path("ISSUES.md").write_text(
+    "\n".join(lignes) + "\n",
+    encoding="utf-8",
+)
+
+print("ISSUES.md generated successfully.")
+PY

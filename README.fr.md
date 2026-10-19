@@ -251,6 +251,7 @@ BFS est implémenté dans `src/ai/algorithm.py` à l'aide d'une file et d'une ta
 
 `src/ui/ui.py` utilise Pygame pour le menu principal, le chargement des sprites et des polices, le HUD, les animations, les entrées clavier et les écrans de pause/fin de partie. Les ressources graphiques sont chargées depuis `assets/font/` et `assets/geometric/`. `src/ui/maze.py` contient également un ancien système d'affichage dans le terminal, mais le point d'entrée principal utilise l'interface Pygame.
 
+
 ## Architecture logicielle générale
 
 ```text
@@ -379,4 +380,4 @@ Ces remarques correspondent à la révision analysée, et non à l'état final v
 
 ### Utilisation de l'intelligence artificielle
 
-**ChatGPT** a servi d'outil d'accompagnement pour comprendre des concepts de Python et d'algorithmique, analyser des erreurs d'importation et de configuration, examiner les procédures Git et de packaging, ainsi que préparer la documentation technique, notamment ce README. Un outil intégré de génération d'images a également servi à créer les designs géométriques originaux des sprites ; leurs variantes directionnelles ont ensuite été produites par symétrie ou rotation. Consulte les [notes de provenance des ressources graphiques](assets/geometric/README.md). Les propositions issues de l'IA doivent être relues, adaptées, intégrées et testées conformément au sujet. L'équipe reste responsable du fonctionnement du projet et de son implémentation.
+**ChatGPT** a servi d'outil d'accompagnement pour comprendre des concepts de Python et d'algorithmique, analyser des erreurs d'importation et de configuration, examiner les procédures Git et de packaging, ainsi que préparer la documentation technique, notamment ce README. Un outil intégré de génération d'images a également servi à créer les designs géométriques originaux des sprites ; leurs variantes directionnelles ont ensuite été produites par symétrie ou rotation.
