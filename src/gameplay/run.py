@@ -289,8 +289,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
 
         if check_victory(game_state):
             game_state.level += 1
-            if game_state.level > len(config.levels):
-                game_state.victory = True
+            game_state.victory = game_state.level > len(config.levels)
             return
 
         move_ghosts: bool = (

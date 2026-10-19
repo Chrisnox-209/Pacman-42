@@ -1,8 +1,16 @@
 {
-	"highscore": [
-	    {
-	        "name_player": "Enzo 42",
-	        "score": 0
-	    }
-	]
+    "highscore": [
+        {
+            "name_player": "Name",
+            "score": 520
+        },
+        {
+            "name_player": "Test42",
+            "score": 430
+        },
+        {
+            "name_player": "Enzo 42",
+            "score": 0
+        }
+    ]
 }

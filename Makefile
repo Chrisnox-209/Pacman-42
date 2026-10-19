@@ -17,12 +17,11 @@ run:
 	@uv run python -m src $(CONFIG)
 
 clean:
-	@rm -Rf .venv
-	@rm -Rf __pycache__
-	@rm -Rf src/__pycache__
-	@rm -Rf .mypy_cache
+	@rm -rf .venv __pycache__ .mypy_cache
+	@find src -type d -name '__pycache__' -prune -exec rm -rf {} +
 	@rm -Rf uv.lock
-	@echo "All code clean"
+	@rm -Rf .venv
+	@echo "All caches cleaned"
 
 lint:
 	@uv run python3 -m mypy --exclude 'llm_sdk' $(MYPY_FLAGS) .

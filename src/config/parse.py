@@ -71,6 +71,33 @@ class ParseHighScore(BaseModel):
         return value
 
 
+def save_highscore(
+    file: Path,
+    scores: ParseHighScore,
+    name: str,
+    score: int,
+) -> bool:
+    """Save the ten best scores without overwriting on write failure."""
+    temporary = file.with_name(file.name + ".tmp")
+    try:
+        entry = ParseScore(name_player=name.strip(), score=score)
+        best_scores = sorted(
+            scores.highscore + [entry],
+            key=lambda item: item.score,
+            reverse=True,
+        )[:10]
+        updated = ParseHighScore(highscore=best_scores)
+        temporary.write_text(
+            updated.model_dump_json(indent=4), encoding="utf-8"
+        )
+        temporary.replace(file)
+    except (OSError, ValidationError) as error:
+        print(f"Unable to save highscore: {error}")
+        return False
+    scores.highscore = best_scores
+    return True
+
+
 class LevelConfig(BaseModel):
     width: int
     height: int
@@ -440,7 +467,6 @@ def highscore_to_data(file: Path) -> ParseHighScore:
             return ParseHighScore.model_validate(score_data)
 
     except FileNotFoundError:
-        file.write_text('{"highscore": []}', encoding="utf-8")
         print(
             f"\n{Color.ORANGE.value}[WARN] "
             f"{Color.RED.value}(highscore_filename: {file})"
@@ -468,4 +494,8 @@ def highscore_to_data(file: Path) -> ParseHighScore:
             f"{Color.MAGENTA.value}[Default value] "
             f"{Color.GREEN.value}Empty highscore list loaded"
         )
+        return ParseHighScore(highscore=[])
+
+    except (OSError, UnicodeError) as error:
+        print(f"Unable to load highscores: {error}")
         return ParseHighScore(highscore=[])

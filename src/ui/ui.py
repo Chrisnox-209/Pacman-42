@@ -7,7 +7,7 @@ import curses
 import time
 import pygame
 
-from src.config.parse import ParseConfig, ParseHighScore
+from src.config.parse import ParseConfig, ParseHighScore, save_highscore
 from src.models.game import GameState, Player
 from src.models.ghost import Ghost
 from src.gameplay.interface import create_game
@@ -512,6 +512,30 @@ def draw_message(
     )
 
 
+def draw_highscores(
+    screen: pygame.Surface,
+    fonts: FontSet,
+    scores: ParseHighScore,
+) -> None:
+    """Display up to ten scores with room for every row."""
+    draw_message(screen, fonts, "HIGHSCORES", ())
+    ranking = sorted(
+        scores.highscore, key=lambda entry: entry.score, reverse=True
+    )[:10]
+    lines = [
+        f"{index}. {entry.name_player}: {entry.score}"
+        for index, entry in enumerate(ranking, start=1)
+    ] or ["No scores saved yet."]
+    for index, line in enumerate(lines):
+        image = render_text(fonts["text"], line)
+        width, _ = image.get_size()
+        screen.blit(
+            image,
+            ((WINDOW_WIDTH - width) // 2,
+             WINDOW_HEIGHT * (200 + index * 28) // 600),
+        )
+
+
 def draw_screen(
     screen: pygame.Surface,
     current_screen: str,
@@ -523,6 +547,7 @@ def draw_screen(
     ghosts: list[Ghost],
     game_state: GameState,
     animation_frame: int,
+    scores: ParseHighScore,
 ) -> None:
     """Clear the window and draw the active screen."""
     screen.blit(BACKGROUND_IMAGE, (0, 0))
@@ -551,12 +576,7 @@ def draw_screen(
             ),
         )
     elif current_screen == "highscores":
-        draw_message(
-            screen,
-            fonts,
-            "HIGHSCORES",
-            ("No scores saved yet.",),
-        )
+        draw_highscores(screen, fonts, scores)
     elif current_screen == "paused":
         draw_message(
             screen,
@@ -588,6 +608,7 @@ class GameWindow:
         self.invisible_enabled = False
         self.next_level_requested = False
         self.player_name = ""
+        self.score_error = ""
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -784,6 +805,15 @@ def wrapper(
                     if current_screen == "game_over" and event.key in (
                         pygame.K_RETURN, pygame.K_KP_ENTER
                     ):
+                        if not save_highscore(
+                            config.highscore_filename,
+                            scores,
+                            window.player_name,
+                            game_state.score,
+                        ):
+                            window.score_error = "Save failed. ENTER: retry"
+                            continue
+                        window.score_error = ""
                         maze, player, ghosts, game_state = create_game(config)
                         window.last_player_position = None
                         window.show_cheats = False
@@ -835,6 +865,7 @@ def wrapper(
                     window.pending_key = -1
                 else:
                     window.player_name = ""
+                    window.score_error = ""
                     current_screen = "game_over"
                 continue
 
@@ -849,6 +880,7 @@ def wrapper(
                 ghosts,
                 game_state,
                 window.animation_frame,
+                scores,
             )
             if current_screen == "game_over":
                 name_image = render_text(
@@ -859,6 +891,15 @@ def wrapper(
                     name_image,
                     ((WINDOW_WIDTH - width) // 2, scaled(390)),
                 )
+                if window.score_error:
+                    error_image = render_text(
+                        window.fonts["text"], window.score_error
+                    )
+                    error_width, _ = error_image.get_size()
+                    window.screen.blit(
+                        error_image,
+                        ((WINDOW_WIDTH - error_width) // 2, scaled(440)),
+                    )
             window.refresh()
             frame_elapsed = time.perf_counter() - frame_start
             time.sleep(max(0, 1 / 60 - frame_elapsed))
