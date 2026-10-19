@@ -500,7 +500,7 @@ def draw_message(
             ),
         )
 
-    if title == "GAME OVER":
+    if title in ("GAME OVER", "VICTORY"):
         help_text = "ENTER: confirm name"
     else:
         help_text = "ENTER or ESC: return"
@@ -568,7 +568,7 @@ def draw_screen(
         draw_message(
             screen,
             fonts,
-            "GAME OVER",
+            "VICTORY" if game_state.victory else "GAME OVER",
             (f"Final score: {game_state.score}",),
         )
 
@@ -823,6 +823,16 @@ def wrapper(
                     window.animation_frame = 0
                     window.pending_key = -1
                     current_screen = "menu"
+                elif not game_state.game_over and not game_state.victory:
+                    maze, player, ghosts, game_state = create_game(
+                        config,
+                        level_number=game_state.level,
+                        score=game_state.score,
+                        lives=player.lives,
+                    )
+                    window.last_player_position = None
+                    window.animation_frame = 0
+                    window.pending_key = -1
                 else:
                     window.player_name = ""
                     current_screen = "game_over"
