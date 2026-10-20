@@ -1,3 +1,5 @@
+"""Create levels and move the player through the maze."""
+
 
 from mazegenerator import MazeGenerator
 
@@ -18,6 +20,7 @@ def move_player(
     key: int,
     noclip: bool = False,
 ) -> None:
+    """Move one cell for the key while respecting bounds and noclip."""
     wall: int = maze[player.y][player.x]
 
     if key in (curses.KEY_UP, ord("w")):
@@ -50,7 +53,11 @@ def move_player(
 def create_game(config: ParseConfig, level_number: int = 1,
                 score: int = 0, lives: int | None = None
                 ) -> tuple[list[list[int]], Player, list[Ghost], GameState]:
+    """Build a level with the supplied score and remaining lives.
 
+    Use a fixed seed only for level one and (row, column) spawn positions.
+    Raise ValueError when the requested level is outside the configuration.
+    """
     list_pacgum: dict[tuple[int, int], bool] = {}
     list_super_pacgum: dict[tuple[int, int], bool] = {}
     game_state = GameState(
@@ -58,7 +65,7 @@ def create_game(config: ParseConfig, level_number: int = 1,
         position_pacgum=list_pacgum,
         position_super_pacgum=list_super_pacgum,
         level=level_number,
-        remaining_time=config.level_max_time,
+        remaining_time=config.levels[level_number - 1].level_max_time,
         frightened=False,
         game_over=False,
         victory=False,

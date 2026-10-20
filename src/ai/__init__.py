@@ -1,0 +1,1 @@
+"""Provide ghost pathfinding algorithms."""

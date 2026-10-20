@@ -1,3 +1,5 @@
+"""Load configuration and scores, then launch the game."""
+
 from pathlib import Path
 
 from src.gameplay.run import run
@@ -15,7 +17,8 @@ from pydantic import ValidationError
 import sys
 
 
-def main(file_config: str | None) -> None:
+def main(file_config: str) -> None:
+    """Load game data and start the graphical interface."""
     maze: list[list[int]]
     player: Player
     ghosts: list[Ghost]

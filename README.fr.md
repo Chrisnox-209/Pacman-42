@@ -48,7 +48,7 @@ Le dépôt comprend une base de gameplay opérationnelle ainsi qu'une procédure
 - Déplacements au clavier avec les flèches ou les touches WASD.
 - Menu principal Pygame, affichage du jeu, HUD, écran de pause et écran de fin de partie.
 - Paramètres configurables dans un fichier JSON acceptant également les commentaires `#` sur une ligne entière.
-- Commandes de triche pour l'évaluation : traversée des murs, invisibilité et saut de niveau.
+- Commandes de triche pour l'évaluation : traversée des murs, invincibilité et saut de niveau.
 - Validation des enregistrements de scores et gestion des fichiers de scores absents ou incorrects.
 - Génération d'un exécutable Linux avec PyInstaller et `make build`.
 
@@ -120,7 +120,7 @@ uv run pacman-42 config.json
 | `Q` | Quitter pendant la partie ou depuis la pause. |
 | `C` | Afficher ou masquer les informations sur les commandes de triche. |
 | `N` | Activer ou désactiver la traversée des murs (*noclip*, dans les limites du labyrinthe). |
-| `I` | Activer ou désactiver l'invisibilité face aux fantômes à l'état normal. |
+| `I` | Activer ou désactiver l'invincibilité face aux fantômes à l'état normal. |
 | `L` | Demander le passage au niveau suivant. |
 
 Les commandes de triche servent à faciliter les tests demandés lors de l'évaluation ; elles ne font pas partie du mode de jeu compétitif normal.
