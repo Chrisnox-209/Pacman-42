@@ -1,3 +1,5 @@
+"""Render the maze and game entities in a curses terminal."""
+
 from __future__ import annotations
 
 import curses
@@ -135,7 +137,6 @@ def draw_maze(
     ghosts: list[Ghost],
     game_state: GameState,
 ) -> None:
-
     """Draw the current test state without changing game logic."""
     if not maze or not maze[0]:
         raise ValueError("Maze cannot be empty.")

@@ -7,7 +7,7 @@ import curses
 import time
 import pygame
 
-from src.config.parse import ParseConfig, ParseHighScore
+from src.config.parse import ParseConfig, ParseHighScore, save_highscore
 from src.models.game import GameState, Player
 from src.models.ghost import Ghost
 from src.gameplay.interface import create_game
@@ -33,10 +33,10 @@ WEST = 8
 MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
-PACGUM_IMAGE = pygame.Surface((1, 1))
-Super_PACGUM_IMAGE = pygame.Surface((1, 1))
-HUD_IMAGE = pygame.Surface((1, 1))
-BACKGROUND_IMAGE = pygame.Surface((1, 1))
+PACGUM_IMAGE: pygame.Surface = pygame.Surface((1, 1))
+Super_PACGUM_IMAGE: pygame.Surface = pygame.Surface((1, 1))
+HUD_IMAGE: pygame.Surface = pygame.Surface((1, 1))
+BACKGROUND_IMAGE: pygame.Surface = pygame.Surface((1, 1))
 
 ASSETS_FOLDER: Path = Path(__file__).resolve().parents[2] / "assets"
 PACMAN_FOLDER: Path = ASSETS_FOLDER / "geometric" / "pacman"
@@ -162,7 +162,7 @@ def load_pacman_images() -> PacmanImages:
 
 
 def load_ghost_images() -> None:
-    """Load normal and frightened ghost textures once at startup."""
+    """Load normal, frightened, and returning ghost textures."""
     for name in ("Athos", "Porthos", "Aramis", "Dartagnan"):
         folder = PACMAN_FOLDER.parent / "ghosts" / name.lower()
         GHOST_IMAGES[name] = {}
@@ -311,7 +311,7 @@ def draw_hud(
     draw_wall(
         screen,
         0,
-        HUD_HEIGHT - scaled(100),
+        HUD_HEIGHT - scaled(2),
         WINDOW_WIDTH,
         scaled(2),
     )
@@ -339,7 +339,7 @@ def draw_cheat_menu(
     screen: pygame.Surface,
     fonts: FontSet,
     noclip: bool,
-    invisible: bool,
+    invincible: bool,
     next_level_requested: bool,
 ) -> None:
     """Display cheat controls and their interface states."""
@@ -349,13 +349,13 @@ def draw_cheat_menu(
     screen.blit(title, (scaled(28), scaled(15)))
 
     noclip_status = "ON" if noclip else "OFF"
-    invisible_status = "ON" if invisible else "OFF"
+    invincible_status = "ON" if invincible else "OFF"
     level_status = "OK" if next_level_requested else "-"
 
     text = (
         f"N:No clip {noclip_status}  "
         f"L:Next {level_status}  "
-        f"I:Invisible {invisible_status}"
+        f"I:Invincible {invincible_status}"
     )
 
     image = render_text(fonts["text"], text)
@@ -395,6 +395,7 @@ def draw_ghosts(
     maze_origin: tuple[int, int],
     frightened: bool,
 ) -> None:
+    """Draw normal, frightened, or returning ghost textures."""
     for ghost in ghosts:
         if ghost.state == "dead":
             state = "returning"
@@ -488,6 +489,8 @@ def draw_message(
         title_image.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
     )
 
+    first_y = 220 if title == "INSTRUCTIONS" else 270
+    line_spacing = 38 if title == "INSTRUCTIONS" else 48
     for index, line in enumerate(lines):
         line_image = render_text(fonts["text"], line)
         screen.blit(
@@ -495,12 +498,12 @@ def draw_message(
             line_image.get_rect(
                 center=(
                     WINDOW_WIDTH // 2,
-                    WINDOW_HEIGHT * (270 + index * 48) // 600,
+                    WINDOW_HEIGHT * (first_y + index * line_spacing) // 600,
                 )
             ),
         )
 
-    if title == "GAME OVER":
+    if title in ("GAME OVER", "VICTORY"):
         help_text = "ENTER: confirm name"
     else:
         help_text = "ENTER or ESC: return"
@@ -510,6 +513,30 @@ def draw_message(
         footer.get_rect(center=(WINDOW_WIDTH // 2,
                                 WINDOW_HEIGHT * 530 // 600)),
     )
+
+
+def draw_highscores(
+    screen: pygame.Surface,
+    fonts: FontSet,
+    scores: ParseHighScore,
+) -> None:
+    """Display up to ten scores with room for every row."""
+    draw_message(screen, fonts, "HIGHSCORES", ())
+    ranking = sorted(
+        scores.highscore, key=lambda entry: entry.score, reverse=True
+    )[:10]
+    lines = [
+        f"{index}. {entry.name_player}: {entry.score}"
+        for index, entry in enumerate(ranking, start=1)
+    ] or ["No scores saved yet."]
+    for index, line in enumerate(lines):
+        image = render_text(fonts["text"], line)
+        width, _ = image.get_size()
+        screen.blit(
+            image,
+            ((WINDOW_WIDTH - width) // 2,
+             WINDOW_HEIGHT * (200 + index * 28) // 600),
+        )
 
 
 def draw_screen(
@@ -523,6 +550,7 @@ def draw_screen(
     ghosts: list[Ghost],
     game_state: GameState,
     animation_frame: int,
+    scores: ParseHighScore,
 ) -> None:
     """Clear the window and draw the active screen."""
     screen.blit(BACKGROUND_IMAGE, (0, 0))
@@ -546,17 +574,18 @@ def draw_screen(
             fonts,
             "INSTRUCTIONS",
             (
-                "Use arrow keys or WASD to move.",
-                "Press ESC to pause the game.",
+                "Arrow keys / WASD: move",
+                "ESC: pause - ENTER: resume - ESC: menu",
+                "Eat all pellets and power pellets to finish a level.",
+                "Power pellets let you eat ghosts for a short time.",
+                "C: show or hide cheat controls",
+                "N: toggle noclip - I: toggle invincibility",
+                "L: skip to the next level",
+                "After a win or loss: enter your name, then ENTER",
             ),
         )
     elif current_screen == "highscores":
-        draw_message(
-            screen,
-            fonts,
-            "HIGHSCORES",
-            ("No scores saved yet.",),
-        )
+        draw_highscores(screen, fonts, scores)
     elif current_screen == "paused":
         draw_message(
             screen,
@@ -568,7 +597,7 @@ def draw_screen(
         draw_message(
             screen,
             fonts,
-            "GAME OVER",
+            "VICTORY" if game_state.victory else "GAME OVER",
             (f"Final score: {game_state.score}",),
         )
 
@@ -577,17 +606,20 @@ class GameWindow:
     """Provide the input method expected by the original game loop."""
 
     def __init__(self) -> None:
+        """Create the display and initialize input and interface state."""
         self.screen, self.fonts, self.images = create_display()
-        self.closed = False
+        self.closed: bool = False
         self.animation_frame = 0
         self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
-        self.return_to_menu = False
-        self.show_cheats = False
-        self.noclip_enabled = False
-        self.invisible_enabled = False
-        self.next_level_requested = False
-        self.player_name = ""
+        self.last_move_time: float = 0.0
+        self.return_to_menu: bool = False
+        self.show_cheats: bool = False
+        self.noclip_enabled: bool = False
+        self.invincible_enabled: bool = False
+        self.next_level_requested: bool = False
+        self.player_name: str = ""
+        self.score_error: str = ""
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -617,8 +649,8 @@ class GameWindow:
                 elif event.key == pygame.K_n:
                     self.noclip_enabled = not self.noclip_enabled
                 elif event.key == pygame.K_i:
-                    self.invisible_enabled = not self.invisible_enabled
-                    print("INVISIBLE:", self.invisible_enabled)
+                    self.invincible_enabled = not self.invincible_enabled
+                    print("INVINCIBLE:", self.invincible_enabled)
                 elif event.key == pygame.K_l:
                     self.next_level_requested = not self.next_level_requested
             elif event.type == pygame.KEYDOWN:
@@ -638,7 +670,6 @@ class GameWindow:
 
     def pause(self) -> None:
         """Wait for the user to resume without updating game objects."""
-
         while not self.closed:
             frame_start = time.perf_counter()
             self.screen.blit(BACKGROUND_IMAGE, (0, 0))
@@ -680,46 +711,47 @@ def draw_maze(
     ghosts: list[Ghost],
     game_state: GameState,
 ) -> None:
-    """Animate the display during the 300 ms between game updates."""
-    position: tuple[int, int] = (player.x, player.y)
-    moving: bool = (
-        window.last_player_position is not None
-        and position != window.last_player_position
-    )
+    """Draw one frame and limit rendering to approximately 60 FPS."""
+    frame_start = time.perf_counter()
+    now = time.monotonic()
+    position = (player.x, player.y)
+
+    if window.last_player_position is None:
+        window.last_move_time = 0.0
+    elif position != window.last_player_position:
+        window.last_move_time = now
+
     window.last_player_position = position
-    start = time.monotonic()
 
-    while not window.closed:
-        frame_start = time.perf_counter()
-        window.pending_key = window.getch()
-        elapsed = int((time.monotonic() - start) * 1000)
-        if window.closed or window.return_to_menu or elapsed >= 300:
-            break
+    moving = now - window.last_move_time < 0.3
+    animation_index = int(now * 1000) // 20 % len(PACMAN_SEQUENCE)
+    window.animation_frame = (
+        PACMAN_SEQUENCE[animation_index] if moving else 0
+    )
 
-        window.animation_frame = (PACMAN_SEQUENCE[elapsed // 20]
-                                  if moving else 0)
-        window.screen.blit(BACKGROUND_IMAGE, (0, 0))
-        draw_game(
+    window.screen.blit(BACKGROUND_IMAGE, (0, 0))
+    draw_game(
+        window.screen,
+        window.fonts,
+        window.images,
+        maze,
+        player,
+        ghosts,
+        game_state,
+        window.animation_frame,
+    )
+    if window.show_cheats:
+        draw_cheat_menu(
             window.screen,
             window.fonts,
-            window.images,
-            maze,
-            player,
-            ghosts,
-            game_state,
-            window.animation_frame,
+            window.noclip_enabled,
+            window.invincible_enabled,
+            window.next_level_requested,
         )
-        if window.show_cheats:
-            draw_cheat_menu(
-                window.screen,
-                window.fonts,
-                window.noclip_enabled,
-                window.invisible_enabled,
-                window.next_level_requested,
-            )
-        window.refresh()
-        frame_elapsed = time.perf_counter() - frame_start
-        time.sleep(max(0, 1 / 60 - frame_elapsed))
+    window.refresh()
+
+    frame_elapsed = time.perf_counter() - frame_start
+    time.sleep(max(0, 1 / 60 - frame_elapsed))
 
 
 def wrapper(
@@ -784,11 +816,20 @@ def wrapper(
                     if current_screen == "game_over" and event.key in (
                         pygame.K_RETURN, pygame.K_KP_ENTER
                     ):
+                        if not save_highscore(
+                            config.highscore_filename,
+                            scores,
+                            window.player_name,
+                            game_state.score,
+                        ):
+                            window.score_error = "Save failed. ENTER: retry"
+                            continue
+                        window.score_error = ""
                         maze, player, ghosts, game_state = create_game(config)
                         window.last_player_position = None
                         window.show_cheats = False
                         window.noclip_enabled = False
-                        window.invisible_enabled = False
+                        window.invincible_enabled = False
                         window.next_level_requested = False
                         window.animation_frame = 0
                         window.pending_key = -1
@@ -818,13 +859,24 @@ def wrapper(
                     window.last_player_position = None
                     window.show_cheats = False
                     window.noclip_enabled = False
-                    window.invisible_enabled = False
+                    window.invincible_enabled = False
                     window.next_level_requested = False
                     window.animation_frame = 0
                     window.pending_key = -1
                     current_screen = "menu"
+                elif not game_state.game_over and not game_state.victory:
+                    maze, player, ghosts, game_state = create_game(
+                        config,
+                        level_number=game_state.level,
+                        score=game_state.score,
+                        lives=player.lives,
+                    )
+                    window.last_player_position = None
+                    window.animation_frame = 0
+                    window.pending_key = -1
                 else:
                     window.player_name = ""
+                    window.score_error = ""
                     current_screen = "game_over"
                 continue
 
@@ -839,6 +891,7 @@ def wrapper(
                 ghosts,
                 game_state,
                 window.animation_frame,
+                scores,
             )
             if current_screen == "game_over":
                 name_image = render_text(
@@ -849,6 +902,15 @@ def wrapper(
                     name_image,
                     ((WINDOW_WIDTH - width) // 2, scaled(390)),
                 )
+                if window.score_error:
+                    error_image = render_text(
+                        window.fonts["text"], window.score_error
+                    )
+                    error_width, _ = error_image.get_size()
+                    window.screen.blit(
+                        error_image,
+                        ((WINDOW_WIDTH - error_width) // 2, scaled(440)),
+                    )
             window.refresh()
             frame_elapsed = time.perf_counter() - frame_start
             time.sleep(max(0, 1 / 60 - frame_elapsed))

@@ -48,7 +48,7 @@ The repository contains a working gameplay foundation and a Linux packaging work
 - Keyboard movement using arrow keys or WASD.
 - Pygame main menu, game display, HUD, pause screen, and game-over screen.
 - Configurable game parameters loaded from a JSON file that also supports full-line `#` comments.
-- Evaluation-oriented cheat controls for noclip, invisibility, and level skipping.
+- Evaluation-oriented cheat controls for noclip, invincibility, and level skipping.
 - Input validation for highscore records and recovery from missing or malformed score files.
 - Linux executable generation through PyInstaller and `make build`.
 
@@ -120,7 +120,7 @@ uv run pacman-42 config.json
 | `Q` | Quit during gameplay or from the pause screen. |
 | `C` | Toggle the on-screen cheat-control information. |
 | `N` | Toggle noclip (ignore maze walls, within the maze bounds). |
-| `I` | Toggle invisibility to normal-state ghosts. |
+| `I` | Toggle invincibility to normal-state ghosts. |
 | `L` | Request the next level. |
 
 Cheat controls are provided to help evaluators exercise game features; they are not part of normal competitive play.

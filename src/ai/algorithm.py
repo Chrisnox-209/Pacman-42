@@ -1,3 +1,5 @@
+"""Find routes and choose ghost movement targets."""
+
 from src.common.utils import possible_neighbor, mirror_path
 from collections import deque
 import random
@@ -5,6 +7,10 @@ import random
 
 def bfs(start: tuple[int, int], target: tuple[int, int],
         maze: list[list[int]]) -> list[tuple[int, int]]:
+    """Return a shortest path, or an empty list if no route exists.
+
+    Use (row, column) coordinates for both endpoints and path cells.
+    """
     y: int = start[0]
     x: int = start[1]
 
@@ -40,6 +46,7 @@ def bfs(start: tuple[int, int], target: tuple[int, int],
 def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
                       start: tuple[int, int],
                       target: tuple[int, int]) -> list[tuple[int, int]]:
+    """Rebuild the path from start to target using predecessor cells."""
     final_path: list[tuple[int, int]] = []
     final_path.append(target)
     point: tuple[int, int] = target
@@ -54,6 +61,7 @@ def road_construction(routing_table: dict[tuple[int, int], tuple[int, int]],
 
 def preshoot(pos_player: tuple[int, int],
              maze: list[list[int]]) -> tuple[int, int]:
+    """Choose a target near the player using a short random walk."""
     y: int = pos_player[0]
     x: int = pos_player[1]
     cell_player: int = maze[y][x]
@@ -73,6 +81,7 @@ def preshoot(pos_player: tuple[int, int],
 
 def move_randomly(path: dict[str, int],
                   last_path: str | None) -> str | None:
+    """Choose an open direction, avoiding reversal when possible."""
     direction: list[str] = []
 
     for key, value in path.items():
@@ -90,7 +99,7 @@ def move_randomly(path: dict[str, int],
 
 def unpredictable(start: tuple[int, int], pos_player: tuple[int, int],
                   maze: list[list[int]],) -> tuple[int, int]:
-
+    """Choose a chase step or a random neighboring cell."""
     nb: int = random.randint(1, 100)
 
     if nb <= 70:
@@ -118,7 +127,7 @@ def unpredictable(start: tuple[int, int], pos_player: tuple[int, int],
 def to_flee(pos_ghost: tuple[int, int], pos_player: tuple[int, int],
             last_pos_ghost: tuple[int, int] | None,
             maze: list[list[int]]) -> tuple[int, int]:
-
+    """Choose a neighbor away from the chase route when possible."""
     route: list[tuple[int, int]] = bfs(pos_ghost, pos_player, maze)
 
     if pos_ghost == pos_player:
