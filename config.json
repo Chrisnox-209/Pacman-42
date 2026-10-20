@@ -62,7 +62,6 @@
 			"level_max_time": 145
 	    }
 	],
-	# number of lives
     "lives": 3,
     "speed_player": 40,
     "speed_ghosts": 25,
