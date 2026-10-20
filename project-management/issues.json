@@ -1,0 +1,666 @@
+[
+  {
+    "number": 37,
+    "title": "[CORE] Intégration de la configuration dans le jeu",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [],
+    "labels": [],
+    "body": "remplacer les valeurs codées en dur dans __main__.py\nutiliser la config pour MazeGenerator \nutiliser la config pour GameState \ntransmettre les paramètres nécessaires au reste du jeu.",
+    "created_at": "2026-10-07T08:39:42Z",
+    "updated_at": "2026-10-13T15:07:51Z",
+    "closed_at": "2026-10-13T15:07:51Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/37"
+  },
+  {
+    "number": 36,
+    "title": "[CORE] Parsing et validation de la configuration",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [],
+    "body": "- charger le fichier\n- convertir les valeurs en Python\n- vérifier les types\n- vérifier les valeurs invalides \n- gérer fichier absent / JSON incorrect / clé manquante\n- afficher des erreurs propres au lieu de crash.",
+    "created_at": "2026-10-07T08:39:25Z",
+    "updated_at": "2026-10-09T15:57:21Z",
+    "closed_at": "2026-10-09T15:57:21Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/36"
+  },
+  {
+    "number": 35,
+    "title": "[CORE] Création du fichier de configuration",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [],
+    "body": "- créer le fichier JSON de configuration \n- définir les paramètres configurables \n- taille du maze \n- seed \n- durée du niveau \n- nombre de vies \n- éventuellement vitesse des ghosts / mode cheat \n- prévoir les commentaires si le format demandé par le sujet le permet.",
+    "created_at": "2026-10-07T08:38:32Z",
+    "updated_at": "2026-10-09T15:57:25Z",
+    "closed_at": "2026-10-09T15:57:25Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/35"
+  },
+  {
+    "number": 34,
+    "title": "[SHARED] Suivi des issues",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "documentation"
+    ],
+    "body": "- suivre ce qu'il reste à faire\n- mettre à jour les issues au fur et à mesure\n- vérifier les modifications avant de les merge dans main",
+    "created_at": "2026-10-07T08:25:27Z",
+    "updated_at": "2026-10-20T14:56:59Z",
+    "closed_at": "2026-10-20T14:56:59Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/34"
+  },
+  {
+    "number": 33,
+    "title": "[SHARED] Packaging du jeu",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "documentation",
+      "enhancement"
+    ],
+    "body": "- créer le script de packaging à la racine\n- inclure les images, la config et les instructions\n- vérifier que le jeu se lance sur un autre ordinateur\n- mettre le jeu gratuitement sur une plateforme en non listé ou privé",
+    "created_at": "2026-10-07T08:25:22Z",
+    "updated_at": "2026-10-19T13:33:24Z",
+    "closed_at": "2026-10-19T13:33:24Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/33"
+  },
+  {
+    "number": 32,
+    "title": "[SHARED] Gestion du projet",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "documentation"
+    ],
+    "body": "- créer un dossier de suivi dans le dépôt\n- ajouter le planning et la répartition des tâches\n- noter l'avancement et les problèmes rencontrés\n- garder les résultats des tests",
+    "created_at": "2026-10-07T08:25:17Z",
+    "updated_at": "2026-10-16T05:47:28Z",
+    "closed_at": "2026-10-16T05:47:28Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/32"
+  },
+  {
+    "number": 31,
+    "title": "[SHARED] README",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "documentation"
+    ],
+    "body": "- rédiger le README en anglais avec les sections du sujet\n- expliquer l'installation et le lancement\n- expliquer la config, les scores et le générateur\n- présenter l'architecture et le travail de chacun",
+    "created_at": "2026-10-07T08:25:11Z",
+    "updated_at": "2026-10-19T13:33:22Z",
+    "closed_at": "2026-10-19T13:33:22Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/31"
+  },
+  {
+    "number": 30,
+    "title": "[SHARED] Nettoyage et vérification du code",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- corriger les erreurs flake8 et mypy\n- ajouter les docstrings et les types manquants\n- vérifier le Makefile\n- compléter le gitignore",
+    "created_at": "2026-10-07T08:25:06Z",
+    "updated_at": "2026-10-20T14:56:57Z",
+    "closed_at": "2026-10-20T14:56:57Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/30"
+  },
+  {
+    "number": 29,
+    "title": "[SHARED] Gestion des erreurs",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "bug"
+    ],
+    "body": "- gérer les erreurs de config et du générateur\n- gérer les erreurs des images et des scores\n- afficher des messages clairs sans traceback\n- fermer le jeu proprement",
+    "created_at": "2026-10-07T08:24:59Z",
+    "updated_at": "2026-10-20T14:56:54Z",
+    "closed_at": "2026-10-20T14:56:54Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/29"
+  },
+  {
+    "number": 28,
+    "title": "[UI] Highscores",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- charger et sauvegarder les scores\n- garder les 10 meilleurs scores\n- limiter les noms à 10 caractères, lettres, chiffres et espaces\n- afficher les scores dans le menu\n- gérer les erreurs du fichier",
+    "created_at": "2026-10-07T08:24:37Z",
+    "updated_at": "2026-10-19T11:55:31Z",
+    "closed_at": "2026-10-19T11:55:31Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/28"
+  },
+  {
+    "number": 27,
+    "title": "[UI] Écrans de fin de partie",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- afficher la victoire ou la défaite\n- afficher le score final\n- saisir le nom du joueur\n- revenir au menu",
+    "created_at": "2026-10-07T08:24:31Z",
+    "updated_at": "2026-10-19T11:55:25Z",
+    "closed_at": "2026-10-19T11:55:25Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/27"
+  },
+  {
+    "number": 26,
+    "title": "[UI] Pause et retour au menu",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "bug",
+      "enhancement"
+    ],
+    "body": "- reprendre la partie depuis la pause\n- revenir au menu sans fermer le jeu\n- pouvoir lancer une nouvelle partie\n- compléter les instructions",
+    "created_at": "2026-10-07T08:24:25Z",
+    "updated_at": "2026-10-16T14:01:28Z",
+    "closed_at": "2026-10-16T14:01:28Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/26"
+  },
+  {
+    "number": 25,
+    "title": "[ALGO] Mode cheat",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- ajouter un mode cheat pour la soutenance\n- permettre de tester rapidement les niveaux\n- documenter les commandes",
+    "created_at": "2026-10-07T08:24:21Z",
+    "updated_at": "2026-10-16T05:46:21Z",
+    "closed_at": "2026-10-16T05:46:21Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/25"
+  },
+  {
+    "number": 24,
+    "title": "[ALGO] Corriger les bugs des fantômes",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "bug"
+    ],
+    "body": "- gérer les cas où aucun chemin n'est trouvé\n- éviter les erreurs quand un fantôme est retiré\n- vérifier les déplacements dans les impasses",
+    "created_at": "2026-10-07T08:24:16Z",
+    "updated_at": "2026-10-14T14:28:41Z",
+    "closed_at": "2026-10-14T14:28:41Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/24"
+  },
+  {
+    "number": 23,
+    "title": "[ALGO] Progression du jeu",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- ajouter le chronomètre\n- gérer au moins 10 niveaux\n- passer au niveau suivant quand toutes les pacgums sont mangées\n- garder le score et les vies entre les niveaux\n- gérer la victoire et la défaite",
+    "created_at": "2026-10-07T08:24:11Z",
+    "updated_at": "2026-10-16T05:46:47Z",
+    "closed_at": "2026-10-16T05:46:47Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/23"
+  },
+  {
+    "number": 22,
+    "title": "[ALGO] Collisions et réapparition",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "bug",
+      "enhancement"
+    ],
+    "body": "- retirer une vie quand un fantôme touche Pac-Man\n- faire réapparaître Pac-Man au centre\n- permettre de manger les fantômes en mode fuite\n- ajouter les points et faire revenir les fantômes à leur coin",
+    "created_at": "2026-10-07T08:23:54Z",
+    "updated_at": "2026-10-16T05:46:36Z",
+    "closed_at": "2026-10-16T05:46:36Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/22"
+  },
+  {
+    "number": 21,
+    "title": "[ALGO] Pacgums et score",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- placer les pacgums dans le labyrinthe\n- placer les super-pacgums dans les quatre coins\n- retirer les gommes mangées et ajouter les points\n- rendre les fantômes comestibles pendant un moment",
+    "created_at": "2026-10-07T08:23:50Z",
+    "updated_at": "2026-10-14T14:28:37Z",
+    "closed_at": "2026-10-14T14:28:37Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/21"
+  },
+  {
+    "number": 20,
+    "title": "[ALGO] Génération des niveaux",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- utiliser les dimensions et la seed de la config\n- garder le package externe sans le modifier\n- vérifier les positions de départ\n- gérer les erreurs du générateur",
+    "created_at": "2026-10-07T08:23:45Z",
+    "updated_at": "2026-10-20T14:57:01Z",
+    "closed_at": "2026-10-20T14:57:01Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/20"
+  },
+  {
+    "number": 19,
+    "title": "[ALGO] Fichier de configuration",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- lancer le jeu avec python3 pac-man.py config.json\n- lire le fichier JSON et ignorer les commentaires\n- récupérer les paramètres du jeu\n- gérer les valeurs manquantes ou incorrectes",
+    "created_at": "2026-10-07T08:23:42Z",
+    "updated_at": "2026-10-10T12:18:57Z",
+    "closed_at": "2026-10-10T12:18:57Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/19"
+  },
+  {
+    "number": 18,
+    "title": "[SHARED] Relier les nouvelles données du jeu à l'UI",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- définir les données que l'algo envoie à l'UI\n- relier les pacgums et les états des fantômes\n- relier la victoire et la défaite",
+    "created_at": "2026-10-07T08:23:37Z",
+    "updated_at": "2026-10-19T11:55:47Z",
+    "closed_at": "2026-10-19T11:55:47Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/18"
+  },
+  {
+    "number": 17,
+    "title": "[SHARED] Vérifier la bibliothèque graphique",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "documentation",
+      "question"
+    ],
+    "body": "- vérifier que les fonctions Pygame utilisées sont compatibles avec le sujet\n- adapter celles qui ne le sont pas",
+    "created_at": "2026-10-07T08:23:31Z",
+    "updated_at": "2026-10-20T14:56:56Z",
+    "closed_at": "2026-10-20T14:56:56Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/17"
+  },
+  {
+    "number": 16,
+    "title": "[UI] Adapter les éléments à la taille de l'écran",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- adapter la taille du labyrinthe et des murs\n- adapter Pac-Man et les fantômes\n- adapter les pacgums et super-pacgums\n- adapter le HUD et les menus",
+    "created_at": "2026-10-07T08:06:45Z",
+    "updated_at": "2026-10-07T08:46:24Z",
+    "closed_at": "2026-10-07T08:46:24Z",
+    "comments_count": 1,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/16"
+  },
+  {
+    "number": 15,
+    "title": "[UI] Refaire les textures",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- afficher les pacgums et super-pacgums\n- changer la texture des fantômes quand ils fuient\n- afficher les fantômes mangés",
+    "created_at": "2026-10-07T07:57:32Z",
+    "updated_at": "2026-10-08T09:23:48Z",
+    "closed_at": "2026-10-08T09:23:48Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/15"
+  },
+  {
+    "number": 14,
+    "title": "[UI] Nettoyer le fichier main",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- mettre les fonctions dans game.py\n- garder un main simple\n- merge les modifications dans main",
+    "created_at": "2026-10-07T07:56:29Z",
+    "updated_at": "2026-10-07T08:56:23Z",
+    "closed_at": "2026-10-07T08:56:23Z",
+    "comments_count": 1,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/14"
+  },
+  {
+    "number": 13,
+    "title": "[ALGO] Déplacement continu de Pac-Man",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- faire avancer Pac-Man même quand on relâche la touche\n- l'arrêter devant un mur\n- permettre de changer de direction",
+    "created_at": "2026-10-06T13:05:58Z",
+    "updated_at": "2026-10-13T11:37:19Z",
+    "closed_at": "2026-10-13T11:37:19Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/13"
+  },
+  {
+    "number": 12,
+    "title": "[UI] adaptation de la fenetre",
+    "state": "closed",
+    "author": "Tagaki69",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [],
+    "body": "adapter la taille de la fenetre en fonction de la taille de l'ecran",
+    "created_at": "2026-10-06T12:57:55Z",
+    "updated_at": "2026-10-06T13:18:10Z",
+    "closed_at": "2026-10-06T13:18:10Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/12"
+  },
+  {
+    "number": 11,
+    "title": "[ALGO] Intelligence des fantômes 2/2",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [],
+    "body": "- poursuivre Pac-Man\n- fuir avec une super-pacgum\n- gérer les différents comportements",
+    "created_at": "2026-10-02T16:18:12Z",
+    "updated_at": "2026-10-06T17:54:58Z",
+    "closed_at": "2026-10-06T17:54:58Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/11"
+  },
+  {
+    "number": 10,
+    "title": "[SHARED] Tests et validation",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "bug",
+      "documentation"
+    ],
+    "body": "- vérifier les fonctionnalités\n- noter les bugs et corrections",
+    "created_at": "2026-10-01T14:00:34Z",
+    "updated_at": "2026-10-20T14:57:02Z",
+    "closed_at": "2026-10-20T14:57:02Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/10"
+  },
+  {
+    "number": 9,
+    "title": "[SHARED] Architecture du projet",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [],
+    "body": "- organiser les fichiers\n- définir comment UI et algo communiquent",
+    "created_at": "2026-10-01T14:00:18Z",
+    "updated_at": "2026-10-07T08:10:12Z",
+    "closed_at": "2026-10-07T08:10:12Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/9"
+  },
+  {
+    "number": 8,
+    "title": "[UI] Déplacement de Pac-Man",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [],
+    "body": "contrôles clavier\ncollisions avec les murs\ndéplacement dans les couloirs",
+    "created_at": "2026-10-01T14:00:05Z",
+    "updated_at": "2026-10-06T12:56:53Z",
+    "closed_at": "2026-10-06T12:56:53Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/8"
+  },
+  {
+    "number": 7,
+    "title": "[UI] Affichage du jeu",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- afficher le labyrinthe\n- afficher Pac-Man\n- afficher les fantômes\n- animations",
+    "created_at": "2026-10-01T13:57:03Z",
+    "updated_at": "2026-10-07T08:31:53Z",
+    "closed_at": "2026-10-07T08:27:14Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/7"
+  },
+  {
+    "number": 6,
+    "title": "[UI] Interface principale",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Tagaki69"
+    ],
+    "labels": [],
+    "body": "- menu principal\n- HUD\n- pause\n- écrans d’instructions / affichage highscores",
+    "created_at": "2026-10-01T13:56:46Z",
+    "updated_at": "2026-10-07T08:10:30Z",
+    "closed_at": "2026-10-07T08:10:30Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/6"
+  },
+  {
+    "number": 5,
+    "title": "[ALGO] Intelligence des fantômes 1/2",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [],
+    "body": "- Création d'un premier algorithme ",
+    "created_at": "2026-10-01T13:56:09Z",
+    "updated_at": "2026-10-03T17:08:35Z",
+    "closed_at": "2026-10-03T17:08:35Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/5"
+  },
+  {
+    "number": 4,
+    "title": "[ALGO] Déplacement des fantômes",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- trouver les cases accessibles\n- déplacer un fantôme dans le labyrinthe",
+    "created_at": "2026-10-01T13:55:52Z",
+    "updated_at": "2026-10-02T16:15:57Z",
+    "closed_at": "2026-10-02T16:14:54Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/4"
+  },
+  {
+    "number": 3,
+    "title": "[ALGO] Intégration du labyrinthe",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- tester le maze generator\n- récupérer murs et chemins\n- préparer les données pour les fantômes",
+    "created_at": "2026-10-01T13:55:34Z",
+    "updated_at": "2026-10-02T09:05:52Z",
+    "closed_at": "2026-10-02T09:00:47Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/3"
+  },
+  {
+    "number": 2,
+    "title": "[ALGO] Tester le maze generator",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209"
+    ],
+    "labels": [
+      "enhancement"
+    ],
+    "body": "- vérifier comment le lancer\n- voir ce qu’il retourne",
+    "created_at": "2026-10-01T13:54:37Z",
+    "updated_at": "2026-10-02T10:34:15Z",
+    "closed_at": "2026-10-02T10:34:15Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/2"
+  },
+  {
+    "number": 1,
+    "title": "[main] Creation de la base du projet",
+    "state": "closed",
+    "author": "Chrisnox-209",
+    "assignees": [
+      "Chrisnox-209",
+      "Tagaki69"
+    ],
+    "labels": [
+      "good first issue",
+      "up-to-date"
+    ],
+    "body": "- Ajouter le fichier README \n- Ajouter la base UV \n- Ajouter le Makefile",
+    "created_at": "2026-10-01T13:46:09Z",
+    "updated_at": "2026-10-02T09:08:25Z",
+    "closed_at": "2026-10-01T15:52:14Z",
+    "comments_count": 0,
+    "url": "https://github.com/Chrisnox-209/Pacman-42/issues/1"
+  }
+]

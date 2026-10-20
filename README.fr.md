@@ -349,7 +349,7 @@ Teste l'archive après extraction sur une autre machine Linux avant de la publie
 
 Le projet est développé par une équipe de deux personnes. Le travail est réparti entre différentes branches, notamment `ALGO`, `UI` et `PACKAGING`, avec `main` comme branche d'intégration. Les commits Git et les opérations de fusion gardent une trace des modifications de la logique du jeu, de l'interface graphique et des outils de distribution.
 
-Le sujet de 42 exige également un [dossier de preuves de gestion de projet](docs/project-management/) comprenant une planification ou un tableau Kanban, le suivi de l'avancement, l'analyse des risques, la répartition du travail, les tests d'acceptation et les blocages importants. **Ce dossier n'existe pas encore dans le dépôt analysé et doit être créé et complété avant le rendu.**
+Le sujet de 42 exige également un [dossier de preuves de gestion de projet](project-management/) comprenant une planification ou un tableau Kanban, le suivi de l'avancement, l'analyse des risques, la répartition du travail, les tests d'acceptation et les blocages importants. **Ce dossier n'existe pas encore dans le dépôt analysé et doit être créé et complété avant le rendu.**
 
 ## Limites connues
 

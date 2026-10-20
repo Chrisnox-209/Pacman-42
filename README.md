@@ -348,7 +348,7 @@ Test the extracted archive on another Linux machine before distribution. The pro
 
 The project is developed by a two-person team. Work is separated across development branches such as `ALGO`, `UI`, and `PACKAGING`, with `main` as the integration branch. Git commits and pull/merge workflows record changes to gameplay logic, interface code, and distribution tooling.
 
-The 42 subject additionally requires a dedicated [project-management evidence directory](docs/project-management/) containing a timeline or Kanban board, progress tracking, risk analysis, work distribution, acceptance tests, and significant blockers. **The linked directory does not exist in the reviewed repository yet and must be created and populated before submission.**
+The 42 subject additionally requires a dedicated [project-management evidence directory](project-management/) containing a timeline or Kanban board, progress tracking, risk analysis, work distribution, acceptance tests, and significant blockers. **The linked directory does not exist in the reviewed repository yet and must be created and populated before submission.**
 
 ## Known Limitations
 
