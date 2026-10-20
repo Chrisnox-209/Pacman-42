@@ -311,7 +311,7 @@ def draw_hud(
     draw_wall(
         screen,
         0,
-        HUD_HEIGHT - scaled(100),
+        HUD_HEIGHT - scaled(2),
         WINDOW_WIDTH,
         scaled(2),
     )
@@ -339,7 +339,7 @@ def draw_cheat_menu(
     screen: pygame.Surface,
     fonts: FontSet,
     noclip: bool,
-    invisible: bool,
+    invincible: bool,
     next_level_requested: bool,
 ) -> None:
     """Display cheat controls and their interface states."""
@@ -349,13 +349,13 @@ def draw_cheat_menu(
     screen.blit(title, (scaled(28), scaled(15)))
 
     noclip_status = "ON" if noclip else "OFF"
-    invisible_status = "ON" if invisible else "OFF"
+    invincible_status = "ON" if invincible else "OFF"
     level_status = "OK" if next_level_requested else "-"
 
     text = (
         f"N:No clip {noclip_status}  "
         f"L:Next {level_status}  "
-        f"I:Invisible {invisible_status}"
+        f"I:Invincible {invincible_status}"
     )
 
     image = render_text(fonts["text"], text)
@@ -489,6 +489,8 @@ def draw_message(
         title_image.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
     )
 
+    first_y = 220 if title == "INSTRUCTIONS" else 270
+    line_spacing = 38 if title == "INSTRUCTIONS" else 48
     for index, line in enumerate(lines):
         line_image = render_text(fonts["text"], line)
         screen.blit(
@@ -496,7 +498,7 @@ def draw_message(
             line_image.get_rect(
                 center=(
                     WINDOW_WIDTH // 2,
-                    WINDOW_HEIGHT * (270 + index * 48) // 600,
+                    WINDOW_HEIGHT * (first_y + index * line_spacing) // 600,
                 )
             ),
         )
@@ -572,8 +574,14 @@ def draw_screen(
             fonts,
             "INSTRUCTIONS",
             (
-                "Use arrow keys or WASD to move.",
-                "Press ESC to pause the game.",
+                "Arrow keys / WASD: move",
+                "ESC: pause - ENTER: resume - ESC: menu",
+                "Eat all pellets and power pellets to finish a level.",
+                "Power pellets let you eat ghosts for a short time.",
+                "C: show or hide cheat controls",
+                "N: toggle noclip - I: toggle invincibility",
+                "L: skip to the next level",
+                "After a win or loss: enter your name, then ENTER",
             ),
         )
     elif current_screen == "highscores":
@@ -608,7 +616,7 @@ class GameWindow:
         self.return_to_menu: bool = False
         self.show_cheats: bool = False
         self.noclip_enabled: bool = False
-        self.invisible_enabled: bool = False
+        self.invincible_enabled: bool = False
         self.next_level_requested: bool = False
         self.player_name: str = ""
         self.score_error: str = ""
@@ -641,8 +649,8 @@ class GameWindow:
                 elif event.key == pygame.K_n:
                     self.noclip_enabled = not self.noclip_enabled
                 elif event.key == pygame.K_i:
-                    self.invisible_enabled = not self.invisible_enabled
-                    print("INVISIBLE:", self.invisible_enabled)
+                    self.invincible_enabled = not self.invincible_enabled
+                    print("INVINCIBLE:", self.invincible_enabled)
                 elif event.key == pygame.K_l:
                     self.next_level_requested = not self.next_level_requested
             elif event.type == pygame.KEYDOWN:
@@ -737,7 +745,7 @@ def draw_maze(
             window.screen,
             window.fonts,
             window.noclip_enabled,
-            window.invisible_enabled,
+            window.invincible_enabled,
             window.next_level_requested,
         )
     window.refresh()
@@ -821,7 +829,7 @@ def wrapper(
                         window.last_player_position = None
                         window.show_cheats = False
                         window.noclip_enabled = False
-                        window.invisible_enabled = False
+                        window.invincible_enabled = False
                         window.next_level_requested = False
                         window.animation_frame = 0
                         window.pending_key = -1
@@ -851,7 +859,7 @@ def wrapper(
                     window.last_player_position = None
                     window.show_cheats = False
                     window.noclip_enabled = False
-                    window.invisible_enabled = False
+                    window.invincible_enabled = False
                     window.next_level_requested = False
                     window.animation_frame = 0
                     window.pending_key = -1

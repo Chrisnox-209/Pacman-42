@@ -278,7 +278,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
         )
 
         for ghost in ghosts:
-            if stdscr.invisible_enabled and ghost.state == "normal":
+            if stdscr.invincible_enabled and ghost.state == "normal":
                 continue
 
             if check_collision(ghost, player, game_state, config):
@@ -322,7 +322,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                        current_time, config.time_respawn_ghost,
                        game_state.frightened)
 
-            if not (stdscr.invisible_enabled and ghost.state == "normal"):
+            if not (stdscr.invincible_enabled and ghost.state == "normal"):
                 if check_collision(ghost, player, game_state, config):
                     if game_state.game_over:
                         return
