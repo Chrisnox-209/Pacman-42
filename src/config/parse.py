@@ -112,6 +112,7 @@ class LevelConfig(BaseModel):
     width: int
     height: int
     escape_time: int
+    level_max_time: int
 
     @field_validator("width")
     @classmethod
@@ -167,19 +168,38 @@ class LevelConfig(BaseModel):
 
         return value
 
+    @field_validator("level_max_time")
+    @classmethod
+    def check_level_max_time(cls, value: int) -> int:
+        """Validate frightened duration between zero and ten seconds."""
+        if value < 90:
+            raise ValueError(
+                f"\n{Color.BLUE.value}[INFO]"
+                f"{Color.RST.value} level_max_time must be <= 90"
+            )
+
+        if value > 180:
+            raise ValueError(
+                f"\n{Color.BLUE.value}[INFO]"
+                f"{Color.RST.value} level_max_time must be >= 180"
+            )
+
+        return value
+
 
 def default_levels() -> list[LevelConfig]:
     """Return the ten default level configurations."""
-    return [LevelConfig(width=20, height=20, escape_time=6),
-            LevelConfig(width=22, height=20, escape_time=5),
-            LevelConfig(width=24, height=20, escape_time=4),
-            LevelConfig(width=26, height=20, escape_time=3),
-            LevelConfig(width=28, height=20, escape_time=2),
-            LevelConfig(width=30, height=20, escape_time=5),
-            LevelConfig(width=32, height=20, escape_time=2),
-            LevelConfig(width=34, height=20, escape_time=2),
-            LevelConfig(width=36, height=20, escape_time=1),
-            LevelConfig(width=40, height=20, escape_time=0),]
+    return [LevelConfig(width=20, height=20, escape_time=6, level_max_time=90),
+            LevelConfig(width=22, height=20, escape_time=5, level_max_time=90),
+            LevelConfig(width=24, height=20, escape_time=4, level_max_time=90),
+            LevelConfig(width=26, height=20, escape_time=3, level_max_time=90),
+            LevelConfig(width=28, height=20, escape_time=2, level_max_time=90),
+            LevelConfig(width=30, height=20, escape_time=5, level_max_time=90),
+            LevelConfig(width=32, height=20, escape_time=2, level_max_time=90),
+            LevelConfig(width=34, height=20, escape_time=2, level_max_time=90),
+            LevelConfig(width=36, height=20, escape_time=1, level_max_time=90),
+            LevelConfig(width=40, height=20, escape_time=0,
+                        level_max_time=90),]
 
 
 class ParseConfig(BaseModel):
@@ -196,7 +216,6 @@ class ParseConfig(BaseModel):
     points_per_super_pacgum: int = 10
     points_per_ghost: int = 15
     seed: int = 42
-    level_max_time: int = 90
     perfect: bool = False
 
     @field_validator("highscore_filename", mode="before")
@@ -334,23 +353,6 @@ class ParseConfig(BaseModel):
                 f"{Color.GREEN.value}{info.field_name} = {default_points}"
             )
             return default_points
-
-        return value
-
-    @field_validator("level_max_time", mode="before")
-    @classmethod
-    def check_time(cls, value: Any) -> int:
-        """Validate the level duration or use the default time limit."""
-        if type(value) is not int or value < 15:
-            print(
-                f"\n{Color.ORANGE.value}[WARN] "
-                f"{Color.RED.value}(level_max_time: {value})"
-                f"{Color.RST.value} Time must be an integer "
-                "equal to or greater than 15\n"
-                f"{Color.MAGENTA.value}[Default value] "
-                f"{Color.GREEN.value}level_max_time = 90"
-            )
-            return 90
 
         return value
 
