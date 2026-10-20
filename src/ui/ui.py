@@ -287,19 +287,17 @@ def draw_maze_grid(
             if walls & WEST:
                 draw_wall(screen, left, top, thickness, TILE_SIZE)
 
-            for key, value in position_pacgum.items():
-                if (y, x) == key and value:
-                    draw_centered(
-                        screen, PACGUM_IMAGE,
-                        cell_center(x, y, maze_origin),
-                    )
+            if position_pacgum.get((y, x), False):
+                draw_centered(
+                    screen, PACGUM_IMAGE,
+                    cell_center(x, y, maze_origin),
+                )
 
-            for key, value in position_super_pacgum.items():
-                if (y, x) == key and value:
-                    draw_centered(
-                        screen, Super_PACGUM_IMAGE,
-                        cell_center(x, y, maze_origin),
-                    )
+            if position_super_pacgum.get((y, x), False):
+                draw_centered(
+                    screen, Super_PACGUM_IMAGE,
+                    cell_center(x, y, maze_origin),
+                )
 
 
 def create_hud_image() -> pygame.Surface:
