@@ -4,64 +4,73 @@
 	    {
 	        "width": 20,
 	        "height": 20,
-			"escape_time": 6
+			"escape_time": 6,
+			"level_max_time": 90
 	    },
 	    {
 	        "width": 22,
 	        "height": 20,
-			"escape_time": 5
+			"escape_time": 5,
+			"level_max_time": 95
 	    },
 	    {
 	        "width": 24,
 	        "height": 20,
-			"escape_time": 4
+			"escape_time": 4,
+			"level_max_time": 105
 	    },
 	    {
 	        "width": 26,
 	        "height": 20,
-			"escape_time": 3
+			"escape_time": 3,
+			"level_max_time": 112
 	    },
 	    {
 	        "width": 28,
 	        "height": 20,
-			"escape_time": 2
+			"escape_time": 2,
+			"level_max_time": 118
 	    },
 	    {
 	        "width": 30,
 	        "height": 20,
-			"escape_time": 5
+			"escape_time": 5,
+			"level_max_time": 122
 	    },
 	    {
 	        "width": 32,
 	        "height": 20,
-			"escape_time": 2
+			"escape_time": 2,
+			"level_max_time": 128
 	    },
 	    {
 	        "width": 34,
 	        "height": 20,
-			"escape_time": 2
+			"escape_time": 2,
+			"level_max_time": 132
 	    },
 	    {
 	        "width": 36,
 	        "height": 20,
-			"escape_time": 1
+			"escape_time": 1,
+			"level_max_time": 138
 	    },
 	    {
 	        "width": 40,
 	        "height": 20,
-			"escape_time": 0
+			"escape_time": 0,
+			"level_max_time": 145
 	    }
 	],
 	# number of lives
     "lives": 3,
-    "speed_player": 10,
-    "speed_ghosts": 1,
+    "speed_player": 40,
+    "speed_ghosts": 25,
 	"time_respawn_ghost": 3,
-	"pacgum": 1,
+	"pacgum": 42,
     "points_per_pacgum": 10,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
     "seed": 42,
-    "level_max_time": 90,
 	"perfect": false
 }
