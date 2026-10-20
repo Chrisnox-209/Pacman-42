@@ -393,13 +393,13 @@ class ParseConfig(BaseModel):
     @classmethod
     def check_escape_time(cls, value: int) -> int:
         """Validate ghost respawn delay between zero and five seconds."""
-        if value < 0:
+        if type(value) is not int or value < 0:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
                 f"{Color.RST.value} time_respawn_ghost must be <= 0"
             )
 
-        if value > 5:
+        if type(value) is not int or value > 5:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
                 f"{Color.RST.value} time_respawn_ghost must be >= 5"

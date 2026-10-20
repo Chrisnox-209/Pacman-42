@@ -67,7 +67,6 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
         int(screen_width * 0.85), int(screen_height * 0.85)
     )
 
-    pygame.key.set_repeat(180, 100)
     screen = pygame.display.set_mode(window_size)
     pygame.display.set_caption(WINDOW_TITLE)
     WINDOW_WIDTH, WINDOW_HEIGHT = screen.get_size()
@@ -81,10 +80,10 @@ def create_display() -> tuple[pygame.Surface, FontSet, PacmanImages]:
     fonts = load_fonts()
 
     path = PACMAN_FOLDER.parent / "pellets" / "pacgum.png"
-    image = pygame.image.load(path).convert_alpha()
+    image = pygame.image.load(path)
     PACGUM_IMAGE = resize_image(image, (scaled(12), scaled(12)))
     path = PACMAN_FOLDER.parent / "pellets" / "super_pacgum.png"
-    image = pygame.image.load(path).convert_alpha()
+    image = pygame.image.load(path)
     Super_PACGUM_IMAGE = resize_image(image, (scaled(18), scaled(18)))
     load_ghost_images()
     return screen, fonts, load_pacman_images()
@@ -115,7 +114,7 @@ def load_fonts() -> FontSet:
     ):
         atlas = pygame.image.load(
             FONT_FOLDER / f"{style}.png"
-        ).convert_alpha()
+        )
         fonts[style] = {}
         for index, character in enumerate(characters):
             letter = pygame.Surface(
@@ -149,6 +148,18 @@ def render_text(font: BitmapFont, text: str) -> pygame.Surface:
     return image
 
 
+def draw_centered(
+    screen: pygame.Surface,
+    image: pygame.Surface,
+    center: tuple[int, int],
+) -> None:
+    """Draw an image with its center at the given coordinates."""
+    width, height = image.get_size()
+    x = center[0] - width // 2
+    y = center[1] - height // 2
+    screen.blit(image, (x, y))
+
+
 def load_pacman_images() -> PacmanImages:
     """Load the eight prepared frames for each direction once at startup."""
     images: PacmanImages = {}
@@ -156,7 +167,7 @@ def load_pacman_images() -> PacmanImages:
         images[direction] = []
         for number in range(8):
             path = PACMAN_FOLDER / direction / f"frame_{number:02d}.png"
-            image = pygame.image.load(path).convert_alpha()
+            image = pygame.image.load(path)
             images[direction].append(resize_image(image, PACMAN_SIZE))
     return images
 
@@ -167,7 +178,7 @@ def load_ghost_images() -> None:
         folder = PACMAN_FOLDER.parent / "ghosts" / name.lower()
         GHOST_IMAGES[name] = {}
         for state in ("normal", "frightened", "returning"):
-            image = pygame.image.load(folder / f"{state}.png").convert_alpha()
+            image = pygame.image.load(folder / f"{state}.png")
             GHOST_IMAGES[name][state] = resize_image(
                 image, (TILE_SIZE, TILE_SIZE)
             )
@@ -276,19 +287,17 @@ def draw_maze_grid(
             if walls & WEST:
                 draw_wall(screen, left, top, thickness, TILE_SIZE)
 
-            for key, value in position_pacgum.items():
-                if (y, x) == key and value:
-                    rect = PACGUM_IMAGE.get_rect(
-                        center=cell_center(x, y, maze_origin)
-                    )
-                    screen.blit(PACGUM_IMAGE, rect)
+            if position_pacgum.get((y, x), False):
+                draw_centered(
+                    screen, PACGUM_IMAGE,
+                    cell_center(x, y, maze_origin),
+                )
 
-            for key, value in position_super_pacgum.items():
-                if (y, x) == key and value:
-                    rect = Super_PACGUM_IMAGE.get_rect(
-                        center=cell_center(x, y, maze_origin)
-                    )
-                    screen.blit(Super_PACGUM_IMAGE, rect)
+            if position_super_pacgum.get((y, x), False):
+                draw_centered(
+                    screen, Super_PACGUM_IMAGE,
+                    cell_center(x, y, maze_origin),
+                )
 
 
 def create_hud_image() -> pygame.Surface:
@@ -383,10 +392,10 @@ def draw_player(
     """Draw the player sprite at its current maze cell."""
     facing: str = get_player_facing(player.direction)
     image: pygame.Surface = images[facing][animation_frame]
-    image_rect: pygame.Rect = image.get_rect(
-        center=cell_center(player.x, player.y, maze_origin)
+    draw_centered(
+        screen, image,
+        cell_center(player.x, player.y, maze_origin),
     )
-    screen.blit(image, image_rect)
 
 
 def draw_ghosts(
@@ -409,15 +418,10 @@ def draw_ghosts(
             ghost.name
         ][state]
 
-        rect: pygame.Rect = image.get_rect(
-            center=cell_center(
-                ghost.x,
-                ghost.y,
-                maze_origin,
-            )
+        draw_centered(
+            screen, image,
+            cell_center(ghost.x, ghost.y, maze_origin),
         )
-
-        screen.blit(image, rect)
 
 
 def draw_game(
@@ -447,32 +451,26 @@ def draw_menu(
 ) -> None:
     """Draw the main menu and highlight the selected option."""
     title = render_text(fonts["title"], "PAC-MAN")
-    screen.blit(
-        title,
-        title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
+    draw_centered(
+        screen, title,
+        (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4),
     )
 
     for index, option in enumerate(MENU_OPTIONS):
         selected = index == selected_option
         prefix = ">  " if selected else "   "
         image = render_text(fonts["text"], prefix + option)
-        screen.blit(
-            image,
-            image.get_rect(
-                center=(
-                    WINDOW_WIDTH // 2,
-                    WINDOW_HEIGHT * (270 + index * 55) // 600,
-                )
-            ),
+        draw_centered(
+            screen, image,
+            (WINDOW_WIDTH // 2, WINDOW_HEIGHT * (270 + index * 55) // 600),
         )
 
     help_text = render_text(
         fonts["text"], "UP / DOWN: select     ENTER: choose"
     )
-    screen.blit(
-        help_text,
-        help_text.get_rect(center=(WINDOW_WIDTH // 2,
-                                   WINDOW_HEIGHT * 530 // 600)),
+    draw_centered(
+        screen, help_text,
+        (WINDOW_WIDTH // 2, WINDOW_HEIGHT * 530 // 600),
     )
 
 
@@ -484,22 +482,20 @@ def draw_message(
 ) -> None:
     """Draw an information, pause, or game-over screen."""
     title_image = render_text(fonts["title"], title.upper())
-    screen.blit(
-        title_image,
-        title_image.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)),
+    draw_centered(
+        screen, title_image,
+        (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4),
     )
 
     first_y = 220 if title == "INSTRUCTIONS" else 270
     line_spacing = 38 if title == "INSTRUCTIONS" else 48
     for index, line in enumerate(lines):
         line_image = render_text(fonts["text"], line)
-        screen.blit(
-            line_image,
-            line_image.get_rect(
-                center=(
-                    WINDOW_WIDTH // 2,
-                    WINDOW_HEIGHT * (first_y + index * line_spacing) // 600,
-                )
+        draw_centered(
+            screen, line_image,
+            (
+                WINDOW_WIDTH // 2,
+                WINDOW_HEIGHT * (first_y + index * line_spacing) // 600,
             ),
         )
 
@@ -508,10 +504,9 @@ def draw_message(
     else:
         help_text = "ENTER or ESC: return"
     footer = render_text(fonts["text"], help_text)
-    screen.blit(
-        footer,
-        footer.get_rect(center=(WINDOW_WIDTH // 2,
-                                WINDOW_HEIGHT * 530 // 600)),
+    draw_centered(
+        screen, footer,
+        (WINDOW_WIDTH // 2, WINDOW_HEIGHT * 530 // 600),
     )
 
 
@@ -598,7 +593,8 @@ def draw_screen(
             screen,
             fonts,
             "VICTORY" if game_state.victory else "GAME OVER",
-            (f"Final score: {game_state.score}",),
+            (("Congratulations!",) if game_state.victory else ())
+            + (f"Final score: {game_state.score}",),
         )
 
 
@@ -620,6 +616,7 @@ class GameWindow:
         self.next_level_requested: bool = False
         self.player_name: str = ""
         self.score_error: str = ""
+        self.pause_duration: float = 0.0
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -657,7 +654,9 @@ class GameWindow:
                 if event.key == pygame.K_q:
                     self.closed = True
                 elif event.key == pygame.K_ESCAPE:
+                    pause_start = time.monotonic()
                     self.pause()
+                    self.pause_duration += time.monotonic() - pause_start
                 elif event.key in arrow_keys:
                     key = arrow_keys[event.key]
                 elif event.unicode:

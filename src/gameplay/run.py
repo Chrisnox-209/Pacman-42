@@ -185,6 +185,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
     from src.ui.ui import draw_maze, setup_terminal
 
     setup_terminal(stdscr)
+    stdscr.pause_duration = 0.0
 
     last_player_move: float = time.monotonic()
     last_ghost_move: float = time.monotonic()
@@ -229,7 +230,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
     while not game_state.game_over:
         player_dead: bool = False
         key: int = stdscr.getch()
-        current_time: float = time.monotonic()
+        current_time: float = time.monotonic() - stdscr.pause_duration
 
         if stdscr.next_level_requested:
             stdscr.next_level_requested = False
@@ -287,7 +288,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                 reset_positions(player, ghosts, last_positions, last_paths,
                                 ghost_respawn_time)
                 movement_key = -1
-                now: float = time.monotonic()
+                now: float = time.monotonic() - stdscr.pause_duration
                 last_player_move = now
                 last_ghost_move = now
                 last_dead_move = now
@@ -329,7 +330,7 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
                     reset_positions(player, ghosts, last_positions, last_paths,
                                     ghost_respawn_time)
                     movement_key = -1
-                    now = time.monotonic()
+                    now = time.monotonic() - stdscr.pause_duration
                     last_player_move = now
                     last_ghost_move = now
                     last_dead_move = now

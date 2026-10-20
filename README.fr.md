@@ -36,7 +36,7 @@ Le joueur parcourt un labyrinthe, ramasse des Pac-Gums, évite les fantômes et 
 
 L'interface graphique repose sur **Pygame**. Les entités et l'état du jeu sont représentés par des classes Python, les données de configuration et de score sont validées avec **Pydantic**, et les déplacements des fantômes combinent **une recherche en largeur (BFS)** et d'autres stratégies. Les labyrinthes sont fournis par le **package externe A-Maze-ing imposé par le sujet**, et non par un générateur développé pour ce projet.
 
-Le dépôt comprend une base de gameplay opérationnelle ainsi qu'une procédure de packaging Linux. Certaines fonctionnalités complètes de l'interface demandées par le sujet sont encore en cours d'intégration ; consulte la section [Limites connues](#limites-connues).
+Le jeu relie la progression automatique des niveaux, les écrans de victoire et de défaite, la saisie du nom et la sauvegarde des scores. L'intégration du packaging et les finitions de l'interface figurent dans les [Limites connues](#limites-connues).
 
 ## Fonctionnalités
 
@@ -46,13 +46,15 @@ Le dépôt comprend une base de gameplay opérationnelle ainsi qu'une procédure
 - Pac-Gums, Super Pac-Gums dans les coins, points, collisions et vies.
 - États des fantômes : normal, effrayé (*frightened*) et mort/en cours de retour.
 - Déplacements au clavier avec les flèches ou les touches WASD.
-- Menu principal Pygame, affichage du jeu, HUD, écran de pause et écran de fin de partie.
+- Menu principal Pygame, affichage du jeu, HUD, pause et écrans de victoire/défaite.
+- Progression automatique entre les niveaux en conservant le score et les vies restantes.
+- Saisie du nom après victoire ou défaite, sauvegarde des scores et classement des dix meilleurs accessible depuis le menu principal.
 - Paramètres configurables dans un fichier JSON acceptant également les commentaires `#` sur une ligne entière.
 - Commandes de triche pour l'évaluation : traversée des murs, invincibilité et saut de niveau.
 - Validation des enregistrements de scores et gestion des fichiers de scores absents ou incorrects.
-- Génération d'un exécutable Linux avec PyInstaller et `make build`.
+- Le packaging Linux est développé dans la branche `PACKAGING` ; ses commandes ne sont pas encore intégrées à cette branche.
 
-> **État de l'intégration :** l'affichage des dix meilleurs scores et l'enregistrement des nouveaux résultats, la progression automatique entre les niveaux et un écran de victoire dédié ne sont pas encore entièrement raccordés dans la révision analysée.
+> **Déroulement :** menu principal → niveaux successifs → victoire ou défaite → saisie du nom et validation avec Entrée → sauvegarde du score → menu principal.
 
 ## Installation et lancement
 
@@ -103,18 +105,16 @@ uv run pacman-42 config.json
 | `make run` ou `make` | Lance le jeu depuis les sources avec `config.json`. |
 | `make lint` | Exécute mypy et flake8. |
 | `make lint-strict` | Lance les vérifications strictes configurées. |
-| `make debug` | Démarre le débogueur ; sa recette actuelle doit encore recevoir l'argument de configuration. |
-| `make build` | Construit l'exécutable Linux avec PyInstaller. |
+| `make debug` | Exécute `uv run python3 -m pdb -m src $(CONFIG)` ; saisir `c` dans le débogueur pour continuer. |
 | `make clean` | Supprime les caches de développement et l'environnement virtuel. |
-| `make clean-package` | Supprime les fichiers générés pour le packaging. |
-| `make clean-all` | Effectue un nettoyage plus complet du projet et du package. |
 
 ## Commandes du jeu
 
 | Touche | Action |
 | --- | --- |
 | `↑` / `↓` | Monter ou descendre dans le menu principal. |
-| `Entrée` | Sélectionner une option ou reprendre après une pause. |
+| `Entrée` | Sélectionner une option, reprendre après une pause ou valider le nom pour sauvegarder le score final. |
+| `Retour arrière` | Effacer le dernier caractère pendant la saisie du nom. |
 | `↑` `↓` `←` `→` / `W` `A` `S` `D` | Déplacer Pac-Man. |
 | `Échap` | Mettre le jeu en pause ; depuis la pause, retourner au menu principal. |
 | `Q` | Quitter pendant la partie ou depuis la pause. |
@@ -131,7 +131,9 @@ Les commandes de triche servent à faciliter les tests demandés lors de l'éval
 - Ramasse une Super Pac-Gum pour marquer des points et effrayer temporairement les fantômes vulnérables.
 - Toucher un fantôme normal fait perdre une vie ; la partie se termine lorsque le joueur n'a plus de vies.
 - Manger un fantôme effrayé rapporte des points et le renvoie vers son coin d'apparition.
-- Termine tous les niveaux configurés pour gagner ; la version analysée nécessite encore l'intégration des transitions entre niveaux dans l'interface.
+- Ramasse toutes les Pac-Gums et Super Pac-Gums pour démarrer automatiquement le niveau suivant, en conservant le score et les vies restantes.
+- Termine le dernier niveau pour afficher `VICTORY`, `Congratulations!` et le score final.
+- Après une victoire ou une défaite, saisis un nom et appuie sur Entrée pour sauvegarder le score et revenir au menu principal.
 - Le HUD affiche le score, les vies, le niveau et le temps restant.
 
 ## Configuration
@@ -144,45 +146,48 @@ Le fichier de configuration principal en développement est [`config.json`](conf
   "highscore_filename": "scores.json",
   "lives": 3,
   "pacgum": 42,
-  "speed_player": 10,
-  "speed_ghosts": 9,
+  "speed_player": 40,
+  "speed_ghosts": 25,
   "points_per_pacgum": 10,
   "points_per_super_pacgum": 50,
   "points_per_ghost": 200,
   "time_respawn_ghost": 3,
   "seed": 42,
-  "level_max_time": 90,
   "perfect": false
 }
 ```
 
-La clé `levels` peut être omise pour utiliser les dix niveaux intégrés par défaut. Lorsqu'elle est fournie, le parseur actuel attend **au moins dix objets de niveau**, chacun contenant `width`, `height` et `escape_time`. Exemple :
+La clé `levels` peut être omise pour utiliser les dix niveaux intégrés par défaut. Lorsqu'elle est fournie, le parseur attend **au moins dix objets de niveau**, chacun contenant `width`, `height`, `escape_time` et `level_max_time`. Exemple :
 
 ```json
-{"width": 20, "height": 20, "escape_time": 6}
+{"width": 20, "height": 20, "escape_time": 6, "level_max_time": 90}
 ```
 
 ### Référence des paramètres
 
-La colonne **Valeur par défaut** correspond aux valeurs de `ParseConfig()`, utilisées notamment lorsque l'exécutable est lancé sans argument. La colonne **`config.json` du dépôt** représente le fichier actuellement versionné, qui contient certaines valeurs de développement/test.
+La colonne **Valeur par défaut** correspond aux valeurs utilisées par `ParseConfig()` lorsqu’un paramètre est absent ou remplacé par sa valeur de secours. La colonne **`config.json` du dépôt** représente le fichier versionné ; les modifications locales de test peuvent différer.
 
 | Clé | Valeur par défaut | `config.json` du dépôt | Description |
 | --- | --- | --- | --- |
 | `highscore_filename` | `scores.json` | `scores.json` | Chemin du fichier JSON des meilleurs scores. |
-| `levels` | 10 niveaux prédéfinis | 10 niveaux configurés | Dimensions des labyrinthes et durée du mode effrayé. |
+| `levels` | 10 niveaux prédéfinis | 10 niveaux configurés | Dimensions des labyrinthes, durée du mode effrayé et temps limite par niveau. |
 | `lives` | `3` | `3` | Nombre de vies au départ. |
-| `speed_player` | `10` | `10` | Vitesse de déplacement configurée pour le joueur. |
-| `speed_ghosts` | `9` | `1` | Vitesse de déplacement configurée pour les fantômes. |
+| `speed_player` | `100` | `40` | Vitesse du joueur, de 1 à 100 % de la vitesse de base. |
+| `speed_ghosts` | `90` | `25` | Vitesse des fantômes, de 1 à 100 % de la vitesse de base. |
 | `time_respawn_ghost` | `3` | `3` | Temps d'attente en secondes avant la réactivation d'un fantôme mangé. |
-| `pacgum` | `100` | `1` | Pourcentage des cases admissibles contenant une Pac-Gum normale. |
+| `pacgum` | `100` | `42` | Pourcentage des cases admissibles contenant une Pac-Gum normale. |
 | `points_per_pacgum` | `1` | `10` | Points gagnés avec une Pac-Gum. |
 | `points_per_super_pacgum` | `10` | `50` | Points gagnés avec une Super Pac-Gum. |
 | `points_per_ghost` | `15` | `200` | Points gagnés en mangeant un fantôme effrayé. |
 | `seed` | `42` | `42` | Seed de génération reproductible du premier niveau. |
-| `level_max_time` | `90` | `90` | Durée maximale d'un niveau, en secondes. |
+| `levels[].level_max_time` | `90` pour chaque niveau par défaut | `90` à `145` | Temps limite en secondes, propre à chaque niveau ; plage autorisée : 90–180. |
 | `perfect` | `false` | `false` | Paramètre transmis au générateur externe, conservé à `false` pour le sujet. |
 
-Les dimensions des niveaux intégrés s'étendent de **20×20** à **40×20**. La durée de vulnérabilité des fantômes est définie pour chaque niveau et atteint **0 seconde au niveau 10** pour reproduire le comportement du Pac-Man original dans les niveaux avancés. Cette durée nulle est volontaire.
+Les vitesses utilisent une base de **10 cases par seconde** : `100` correspond à 10 cases/s, `40` à 4 cases/s et `25` à 2,5 cases/s. Ce sont des cadences visées ; la cadence réelle dépend de la boucle de jeu.
+
+Les dimensions des niveaux intégrés vont de **20×20** à **40×20**. La durée du mode effrayé est définie par `escape_time` pour chaque niveau. Elle vaut actuellement **0 seconde au niveau 10** : les super-gommes rapportent des points, mais leur effet de vulnérabilité expire immédiatement.
+
+`level_max_time` se place dans chaque objet de niveau, et non à la racine. La partie se termine lorsque le temps restant atteint zéro.
 
 Les champs inconnus sont ignorés par Pydantic. Les valeurs manquantes ou invalides sont traitées par la validation et les valeurs de remplacement du parseur ; certaines combinaisons incorrectes de niveaux ou de paramètres réinitialisent actuellement l'ensemble de la configuration, plutôt que le seul champ concerné.
 
@@ -204,14 +209,18 @@ Le format est vérifié par les modèles `ParseScore` et `ParseHighScore` du fic
 - Les noms des joueurs doivent contenir **entre 1 et 10 caractères**, parmi les lettres, les chiffres et les espaces.
 - Les scores doivent être des **entiers positifs ou nuls**.
 - La liste de meilleurs scores contient **au maximum 10 entrées**.
-- Un fichier manquant est initialisé avec une liste vide.
+- Un fichier manquant charge une liste vide en mémoire ; il est créé lors de la première sauvegarde réussie.
 - Un fichier vide ou mal formé est pris en charge sans faire planter le chargeur.
 
-En mode développement, l'emplacement du fichier est défini par `highscore_filename` dans la configuration. Dans **l'exécutable packagé**, un nom de fichier relatif est résolu à l'intérieur de `~/.pacman-42/` sous Linux : les données sont ainsi indépendantes du dossier de l'application. Les chemins absolus fournis dans la configuration sont conservés.
+Le chemin vient de `highscore_filename` (normalement `scores.json`). Les chemins relatifs sont résolus depuis le dossier de travail courant ; les chemins absolus sont utilisés tels quels. Le stockage spécifique au package appartient à la branche séparée `PACKAGING`.
 
 **Pourquoi JSON ?** Ce format est lisible, facile à vérifier pendant une évaluation, cohérent avec la configuration et ne nécessite aucun service de base de données.
 
-**État actuel de l'implémentation :** le chargement et la validation des scores sont implémentés, mais la version analysée **n'enregistre pas encore le score final d'une nouvelle partie, ne trie pas et ne conserve pas automatiquement les dix meilleurs scores et ne les affiche pas sur l'écran Highscores**. Ces étapes devront être terminées avant l'évaluation finale.
+Au démarrage, le jeu charge les scores existants. Après une victoire ou une défaite, le joueur saisit un nom de **10 caractères maximum : lettres ASCII, chiffres et espaces**. Retour arrière efface un caractère ; Entrée valide un nom non vide après suppression des espaces en début et fin.
+
+`save_highscore()` ajoute le score final, trie les résultats du plus grand au plus petit et conserve les dix meilleurs. La fonction écrit un fichier temporaire à côté du fichier des scores, puis remplace celui-ci après une écriture réussie. Le classement en mémoire est actualisé et le joueur revient au menu principal.
+
+Si la sauvegarde échoue, le jeu reste sur l’écran de fin et affiche `Save failed. ENTER: retry`. Le menu **Highscores** affiche les dix meilleurs scores chargés ou actualisés, ou un message si la liste est vide.
 
 ## Génération des labyrinthes
 
@@ -249,7 +258,7 @@ BFS est implémenté dans `src/ai/algorithm.py` à l'aide d'une file et d'une ta
 
 ### Interface graphique
 
-`src/ui/ui.py` utilise Pygame pour le menu principal, le chargement des sprites et des polices, le HUD, les animations, les entrées clavier et les écrans de pause/fin de partie. Les ressources graphiques sont chargées depuis `assets/font/` et `assets/geometric/`. `src/ui/maze.py` contient également un ancien système d'affichage dans le terminal, mais le point d'entrée principal utilise l'interface Pygame.
+`src/ui/ui.py` utilise Pygame pour le menu principal, le chargement des sprites et des polices, le HUD, les animations, les entrées clavier et les écrans de pause, victoire et défaite. Les ressources graphiques sont chargées depuis `assets/font/` et `assets/geometric/`. `src/ui/maze.py` contient également un ancien système d'affichage dans le terminal, mais le point d'entrée principal utilise l'interface Pygame.
 
 
 ## Architecture logicielle générale
@@ -277,7 +286,6 @@ Pacman-42/
 │   └── ui/
 │       ├── ui.py              # Affichage et entrées Pygame
 │       └── maze.py            # Ancien affichage pour terminal
-├── build.sh                   # Script de création de l'exécutable
 ├── Makefile                   # Commandes de développement et de build
 ├── config.json               # Configuration de développement
 ├── pyproject.toml            # Métadonnées et dépendances
@@ -303,7 +311,9 @@ Cette organisation permet de développer séparément l'intelligence artificiell
 
 ## Packaging et distribution
 
-La branche `PACKAGING` introduit une procédure PyInstaller sous Linux avec [`build.sh`](build.sh). PyInstaller est installé **uniquement comme outil de construction** par ce script ; ce n'est pas une dépendance d'exécution du jeu.
+> Les instructions ci-dessous concernent la branche `PACKAGING`. `build.sh` et les commandes de construction ne sont pas encore présents dans cette branche ; elles ne décrivent pas un build validé du code actuel.
+
+La branche `PACKAGING` introduit une procédure PyInstaller sous Linux avec [`build.sh`](https://github.com/Chrisnox-209/Pacman-42/blob/PACKAGING/build.sh). PyInstaller est installé **uniquement comme outil de construction** par ce script ; ce n'est pas une dépendance d'exécution du jeu.
 
 Depuis la racine du dépôt, sur Linux :
 
@@ -353,17 +363,12 @@ Le sujet de 42 exige également un [dossier de preuves de gestion de projet](pro
 
 ## Limites connues
 
-Les points suivants ont été identifiés lors de l'analyse de la branche `PACKAGING` et ne doivent pas être présentés comme des fonctionnalités déjà terminées :
-
-1. L'écran des meilleurs scores affiche actuellement un texte provisoire au lieu des dix meilleurs scores enregistrés.
-2. La saisie du nom du joueur est présente à l'écran de fin de partie, mais l'enregistrement et le classement du score final ne sont pas encore reliés.
-3. La fin d'un niveau incrémente le compteur dans la boucle de jeu, mais l'interface renvoie actuellement vers l'écran de fin de partie plutôt que de démarrer automatiquement le niveau suivant.
-4. Aucun écran de félicitations distinct n'est encore relié à la victoire finale.
-5. La cible `debug` du Makefile ne transmet pas encore l'argument de configuration obligatoire.
-6. Le package doit encore être testé de bout en bout après extraction de l'archive, accompagné d'instructions pour les joueurs et publié sur itch.io.
-7. Le dossier de documentation de gestion de projet demandé par le sujet n'est pas encore présent dans le dépôt.
-
-Ces remarques correspondent à la révision analysée, et non à l'état final visé pour le projet.
+1. Le panneau de triche recouvre actuellement le HUD.
+2. La taille des cases dépend de l’écran, sans ajustement au nombre de colonnes du niveau ; les grands labyrinthes peuvent dépasser sur certains formats d’écran.
+3. `render_text()` assemble encore les lettres dans une image intermédiaire ; l’affichage direct des lettres reste à intégrer dans le cadre du travail sur les équivalents MLX.
+4. Certaines valeurs incorrectes réinitialisent toute la configuration au lieu du seul paramètre concerné.
+5. Le packaging doit être intégré à cette branche, vérifié après extraction et accompagné des instructions et du lien de distribution.
+6. Le dossier de preuves de gestion du projet reste à intégrer dans cette branche.
 
 ## Ressources et utilisation de l'IA
 
