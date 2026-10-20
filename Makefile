@@ -32,4 +32,4 @@ lint-strict:
 	@uv run python3 -m flake8 --exclude .venv,llm_sdk $(FLAKE_STRICT) .
 
 debug:
-	@uv run python3 -m pdb $(MAIN)
+	@uv run python3 -m pdb -m src $(CONFIG)
