@@ -36,7 +36,7 @@ The player navigates a maze, collects Pac-Gums, avoids ghosts, and uses Super Pa
 
 The graphical frontend is written in **Pygame**. Game entities and state are represented by Python classes, configuration and score data are validated using **Pydantic**, and ghost movement uses **breadth-first search (BFS)** alongside other movement strategies. Mazes are provided by the **assigned external A-Maze-ing package**, not by a generator developed for this project.
 
-The repository contains a working gameplay foundation and a Linux packaging workflow. Some end-to-end UI features required by the subject are still being integrated; see [Known Limitations](#known-limitations).
+The game connects automatic level progression, victory and defeat screens, player-name entry, and persistent highscores. Packaging integration and remaining UI work are listed under [Known Limitations](#known-limitations).
 
 ## Features
 
@@ -46,13 +46,15 @@ The repository contains a working gameplay foundation and a Linux packaging work
 - Pac-Gums, corner Super Pac-Gums, score updates, collisions, and lives.
 - Normal, frightened, and returning/dead ghost states.
 - Keyboard movement using arrow keys or WASD.
-- Pygame main menu, game display, HUD, pause screen, and game-over screen.
+- Pygame main menu, game display, HUD, pause screen, and victory/defeat screens.
+- Automatic level progression with score and remaining lives carried over.
+- Player-name entry after victory or defeat, saved scores, and a top-ten ranking accessible from the main menu.
 - Configurable game parameters loaded from a JSON file that also supports full-line `#` comments.
 - Evaluation-oriented cheat controls for noclip, invincibility, and level skipping.
 - Input validation for highscore records and recovery from missing or malformed score files.
-- Linux executable generation through PyInstaller and `make build`.
+- Linux packaging work is maintained on the `PACKAGING` branch; its build commands are not yet integrated into this branch.
 
-> **Integration status:** The top-10 highscore display and persistence of new scores, automatic progression between levels, and a dedicated victory screen are not yet fully connected in the reviewed revision.
+> **Game flow:** Main menu → play successive levels → victory or defeat → enter a name and confirm with Enter → save the score → main menu.
 
 ## Instructions
 
@@ -103,18 +105,16 @@ uv run pacman-42 config.json
 | `make run` or `make` | Launch the source game using `config.json`. |
 | `make lint` | Run mypy and flake8. |
 | `make lint-strict` | Run the stricter configured checks. |
-| `make debug` | Start the debugger; its current recipe needs the configuration argument to be added. |
-| `make build` | Build the Linux executable with PyInstaller. |
+| `make debug` | Run `uv run python3 -m pdb -m src $(CONFIG)`; type `c` at the debugger prompt to continue. |
 | `make clean` | Remove development caches and the virtual environment. |
-| `make clean-package` | Remove generated packaging artifacts. |
-| `make clean-all` | Run the broader project and package cleanup. |
 
 ## Controls
 
 | Key | Action |
 | --- | --- |
 | `↑` / `↓` | Navigate up/down through the main menu. |
-| `Enter` | Select a menu item or resume from pause. |
+| `Enter` | Select a menu item, resume from pause, or confirm a name and save the final score. |
+| `Backspace` | Delete the last character while entering a name. |
 | `↑` `↓` `←` `→` / `W` `A` `S` `D` | Move Pac-Man. |
 | `Esc` | Pause during gameplay; from the pause screen, return to the main menu. |
 | `Q` | Quit during gameplay or from the pause screen. |
@@ -131,7 +131,9 @@ Cheat controls are provided to help evaluators exercise game features; they are 
 - Eat a Super Pac-Gum to earn points and temporarily frighten vulnerable ghosts.
 - Touching a normal ghost costs one life; reaching zero lives ends the run.
 - Eating a frightened ghost awards points and sends it back toward its spawn corner.
-- Complete all configured levels to win; the current version still requires UI integration for correct level-to-level transitions.
+- Collect all Pac-Gums and Super Pac-Gums to start the next level automatically, keeping the score and remaining lives.
+- Complete the final level to display `VICTORY`, `Congratulations!`, and the final score.
+- After victory or defeat, enter a name and press Enter to save the score and return to the main menu.
 - The HUD shows score, lives, current level, and remaining time.
 
 ## Configuration
@@ -144,45 +146,48 @@ The main development configuration is [`config.json`](config.json). Its format i
   "highscore_filename": "scores.json",
   "lives": 3,
   "pacgum": 42,
-  "speed_player": 10,
-  "speed_ghosts": 9,
+  "speed_player": 40,
+  "speed_ghosts": 25,
   "points_per_pacgum": 10,
   "points_per_super_pacgum": 50,
   "points_per_ghost": 200,
   "time_respawn_ghost": 3,
   "seed": 42,
-  "level_max_time": 90,
   "perfect": false
 }
 ```
 
-The `levels` key may be omitted to use the built-in list of ten levels. If supplied, the current parser expects **at least ten** level objects, each containing `width`, `height`, and `escape_time`, for example:
+The `levels` key may be omitted to use the built-in list of ten levels. If supplied, the parser expects **at least ten** level objects, each containing `width`, `height`, `escape_time`, and `level_max_time`, for example:
 
 ```json
-{"width": 20, "height": 20, "escape_time": 6}
+{"width": 20, "height": 20, "escape_time": 6, "level_max_time": 90}
 ```
 
 ### Configuration reference
 
-The **built-in default** is the value used by `ParseConfig()` and by the packaged executable when launched without arguments. The **tracked file** column describes the current repository's `config.json`; it contains some development/test values.
+The **built-in default** is the value used by `ParseConfig()` when a setting is omitted or replaced by its fallback. The **tracked file** column describes the versioned `config.json`; local test edits may differ.
 
 | Key | Built-in default | Tracked `config.json` | Description |
 | --- | --- | --- | --- |
 | `highscore_filename` | `scores.json` | `scores.json` | Path to highscore JSON data. |
-| `levels` | 10 predefined levels | 10 configured levels | Maze dimensions and frightened duration for each level. |
+| `levels` | 10 predefined levels | 10 configured levels | Maze dimensions, frightened duration, and time limit for each level. |
 | `lives` | `3` | `3` | Starting lives. |
-| `speed_player` | `10` | `10` | Configured player-movement rate. |
-| `speed_ghosts` | `9` | `1` | Configured ghost-movement rate. |
+| `speed_player` | `100` | `40` | Player speed, from 1 to 100% of the base speed. |
+| `speed_ghosts` | `90` | `25` | Ghost speed, from 1 to 100% of the base speed. |
 | `time_respawn_ghost` | `3` | `3` | Delay in seconds before an eaten ghost becomes active again at its corner. |
-| `pacgum` | `100` | `1` | Percentage of eligible cells receiving a regular Pac-Gum. |
+| `pacgum` | `100` | `42` | Percentage of eligible cells receiving a regular Pac-Gum. |
 | `points_per_pacgum` | `1` | `10` | Points for a regular Pac-Gum. |
 | `points_per_super_pacgum` | `10` | `50` | Points for a Super Pac-Gum. |
 | `points_per_ghost` | `15` | `200` | Points for eating a frightened ghost. |
 | `seed` | `42` | `42` | Reproducible maze seed for level 1. |
-| `level_max_time` | `90` | `90` | Time limit for each level, in seconds. |
+| `levels[].level_max_time` | `90` for each default level | `90` to `145` | Time limit in seconds, configured separately for each level; accepted range: 90–180. |
 | `perfect` | `false` | `false` | Passed to the external maze generator; kept `false` for the assignment. |
 
-The built-in level dimensions range from **20×20** to **40×20**. Frightened-mode duration is configured separately for each level, declining to **0 seconds at level 10** to reproduce late-game Pac-Man behavior. This zero duration is intentional.
+Speeds use a base of **10 cells per second**: `100` means 10 cells/s, `40` means 4 cells/s, and `25` means 2.5 cells/s. These are target movement rates; actual timing depends on the game loop.
+
+The built-in level dimensions range from **20×20** to **40×20**. Frightened duration is configured separately with `escape_time`. It is currently **0 seconds at level 10**, so power pellets award points but their frightened effect expires immediately.
+
+`level_max_time` belongs inside each level object, not at the root. Reaching zero remaining time ends the game.
 
 Unrecognized fields are ignored by Pydantic. Invalid or missing configuration values are handled by the parser's validation and fallback logic; some invalid level/settings combinations currently reset the whole configuration rather than only the affected field.
 
@@ -204,14 +209,18 @@ The format is validated by `ParseScore` and `ParseHighScore` in `src/config/pars
 - Player names must be **1–10 characters**, using letters, numbers, and spaces.
 - Scores must be **non-negative integers**.
 - The highscore collection must contain **no more than 10 entries**.
-- A missing file is initialized with an empty highscore list.
+- A missing file loads an empty list in memory; the file is created when a score is successfully saved.
 - An empty or malformed file is handled without crashing the loader.
 
-In source mode, the file path comes from `highscore_filename` in the configuration. In the **packaged executable**, a relative score filename is resolved inside `~/.pacman-42/` on Linux, so the saved data is independent of the application directory. Absolute paths provided in the configuration are preserved.
+The file path comes from `highscore_filename` (normally `scores.json`). Relative paths are resolved from the current working directory; absolute paths are used as provided. Packaging-specific storage behavior belongs to the separate `PACKAGING` branch.
 
 **Why JSON?** It is readable, easy to inspect during peer review, integrates with the configuration approach, and does not require a database service.
 
-**Current implementation status:** Loading and validating records are implemented, but the reviewed version does **not yet write the new final score at game end, sort and retain the best ten scores, or display stored entries on the Highscores screen**. These connections must be finished before the final evaluation.
+At startup, the game loads existing scores. After a win or loss, the player enters a name of up to **10 ASCII letters, digits, or spaces**. Backspace deletes a character; Enter confirms a nonblank name, with surrounding spaces removed.
+
+`save_highscore()` adds the final score, sorts the entries in descending order, and keeps only the best ten. It writes a temporary file next to the score file, then replaces the score file after a successful write. The in-memory ranking is updated and the player returns to the main menu.
+
+If saving fails, the game stays on the end screen and displays `Save failed. ENTER: retry`. The **Highscores** menu displays the loaded or updated top ten, or a message when there are no scores.
 
 ## Maze Generation
 
@@ -249,7 +258,7 @@ BFS is implemented in `src/ai/algorithm.py` with a queue and a predecessor table
 
 ### Graphical interface
 
-`src/ui/ui.py` uses Pygame for the main menu, sprite and font loading, the heads-up display, animation, input handling, and pause/game-over screens. Art assets are loaded from `assets/font/` and `assets/geometric/`. `src/ui/maze.py` also contains an earlier terminal-oriented renderer, but the main entry point uses the Pygame frontend.
+`src/ui/ui.py` uses Pygame for the main menu, sprite and font loading, the heads-up display, animation, input handling, and pause/victory/defeat screens. Art assets are loaded from `assets/font/` and `assets/geometric/`. `src/ui/maze.py` also contains an earlier terminal-oriented renderer, but the main entry point uses the Pygame frontend.
 
 ## General Software Architecture
 
@@ -276,7 +285,6 @@ Pacman-42/
 │   └── ui/
 │       ├── ui.py              # Pygame presentation and input
 │       └── maze.py            # Terminal-oriented renderer
-├── build.sh                   # PyInstaller build script
 ├── Makefile                   # Common development/build commands
 ├── config.json               # Development configuration
 ├── pyproject.toml            # Project metadata and dependencies
@@ -302,7 +310,9 @@ The separation lets the team develop ghost AI, game rules, models, configuration
 
 ## Packaging and Distribution
 
-The `PACKAGING` branch introduces a Linux PyInstaller workflow through [`build.sh`](build.sh). PyInstaller is installed **only as a build tool** by the script; it is not declared as a runtime dependency of the game.
+> The instructions below apply to the `PACKAGING` branch. `build.sh` and the build targets are not yet present in this branch; these instructions do not establish a validated build of the current code.
+
+The `PACKAGING` branch introduces a Linux PyInstaller workflow through [`build.sh`](https://github.com/Chrisnox-209/Pacman-42/blob/PACKAGING/build.sh). PyInstaller is installed **only as a build tool** by the script; it is not declared as a runtime dependency of the game.
 
 Build on Linux from the repository root:
 
@@ -333,7 +343,7 @@ Or explicitly provide a JSON configuration file:
 
 The above example assumes your current directory is the repository root. You can provide an absolute configuration path when launching from elsewhere.
 
-The executable was built for **Linux**. PyInstaller does not cross-compile Windows executables from Linux; a Windows `.exe` must be built in a Windows environment.
+The packaging workflow targets **Linux**. PyInstaller does not cross-compile Windows executables from Linux; a Windows `.exe` must be built in a Windows environment.
 
 For distribution, archive the entire `dist/Pacman-42/` directory, including `_internal/`, and add short instructions for players. For example, on a system with `zip` installed:
 
@@ -352,17 +362,12 @@ The 42 subject additionally requires a dedicated [project-management evidence di
 
 ## Known Limitations
 
-The following items were identified during review of the `PACKAGING` branch and must not be mistaken for completed features:
-
-1. The highscore screen currently shows placeholder text rather than the loaded top ten scores.
-2. Player-name entry is collected at game over, but there is no connected save-and-rank step for the final score.
-3. Level completion increments the level counter in the gameplay loop, but the surrounding UI currently routes the return from `run()` to the game-over screen rather than automatically starting the next level.
-4. A distinct congratulatory victory screen has not yet been connected.
-5. The debug Makefile target currently does not pass the required configuration-file argument.
-6. Packaging still needs end-to-end testing from an extracted archive, player instructions, and the actual itch.io publication.
-7. The requested project-management documentation directory is not yet in the repository.
-
-These notes describe the reviewed code revision, not the final intended feature set.
+1. The cheat panel currently covers the HUD.
+2. Cell size follows the screen size without accounting for each level’s column count; large mazes may exceed some screen formats.
+3. `render_text()` still composes letters into an intermediate image; direct character drawing remains part of the MLX-equivalence work.
+4. Some invalid settings reset the whole configuration instead of just the affected field.
+5. Packaging must be integrated into this branch, checked from an extracted archive, and delivered with player instructions and a distribution link.
+6. Project-management evidence still needs to be integrated into this branch.
 
 ## Resources and AI Usage
 

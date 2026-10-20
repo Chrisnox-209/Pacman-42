@@ -593,7 +593,8 @@ def draw_screen(
             screen,
             fonts,
             "VICTORY" if game_state.victory else "GAME OVER",
-            (f"Final score: {game_state.score}",),
+            (("Congratulations!",) if game_state.victory else ())
+            + (f"Final score: {game_state.score}",),
         )
 
 
