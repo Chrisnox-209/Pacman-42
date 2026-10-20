@@ -191,8 +191,12 @@ def run(stdscr: "GameWindow", maze: list[list[int]],
     last_dead_move: float = time.monotonic()
     last_time: float = time.monotonic()
 
-    player_delay: float = 1 / config.speed_player
-    ghost_delay: float = 1 / config.speed_ghosts
+    base_speed: float = 10.0
+
+    player_delay: float = 1 / (
+        base_speed * config.speed_player / 100)
+    ghost_delay: float = 1 / (
+        base_speed * config.speed_ghosts / 100)
     dead_delay: float = ghost_delay / 3
 
     frightened_start_time: float | None = None

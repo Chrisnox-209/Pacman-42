@@ -54,8 +54,8 @@
 	],
 	# number of lives
     "lives": 3,
-    "speed_player": 10,
-    "speed_ghosts": 1,
+    "speed_player": 50,
+    "speed_ghosts": 30,
 	"time_respawn_ghost": 3,
 	"pacgum": 1,
     "points_per_pacgum": 10,

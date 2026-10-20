@@ -188,8 +188,8 @@ class ParseConfig(BaseModel):
     highscore_filename: Path = Path("scores.json")
     levels: list[LevelConfig] = Field(default_factory=default_levels)
     lives: int = 3
-    speed_player: int = 10
-    speed_ghosts: int = 9
+    speed_player: int = 100
+    speed_ghosts: int = 90
     time_respawn_ghost: int = 3
     pacgum: int = 100
     points_per_pacgum: int = 1
@@ -367,8 +367,8 @@ class ParseConfig(BaseModel):
     ) -> int:
         """Validate movement speed or use the default for the field."""
         defaults: dict[str, int] = {
-            "speed_player": 10,
-            "speed_ghosts": 9,
+            "speed_player": 100,
+            "speed_ghosts": 90,
         }
 
         assert info.field_name is not None
@@ -379,7 +379,7 @@ class ParseConfig(BaseModel):
                 f"\n{Color.ORANGE.value}[WARN] "
                 f"{Color.RED.value}({info.field_name}: {value})"
                 f"{Color.RST.value} Speed must be an integer "
-                "between 1 and 100\n"
+                "between 1 and 100 percent\n"
                 f"{Color.MAGENTA.value}[Default value] "
                 f"{Color.GREEN.value}{info.field_name} = {default_speed}"
             )

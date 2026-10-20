@@ -604,6 +604,7 @@ class GameWindow:
         self.animation_frame = 0
         self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
+        self.last_move_time: float = 0.0
         self.return_to_menu: bool = False
         self.show_cheats: bool = False
         self.noclip_enabled: bool = False
@@ -702,46 +703,47 @@ def draw_maze(
     ghosts: list[Ghost],
     game_state: GameState,
 ) -> None:
-    """Animate the display during the 300 ms between game updates."""
-    position: tuple[int, int] = (player.x, player.y)
-    moving: bool = (
-        window.last_player_position is not None
-        and position != window.last_player_position
-    )
+    """Draw one frame and limit rendering to approximately 60 FPS."""
+    frame_start = time.perf_counter()
+    now = time.monotonic()
+    position = (player.x, player.y)
+
+    if window.last_player_position is None:
+        window.last_move_time = 0.0
+    elif position != window.last_player_position:
+        window.last_move_time = now
+
     window.last_player_position = position
-    start = time.monotonic()
 
-    while not window.closed:
-        frame_start = time.perf_counter()
-        window.pending_key = window.getch()
-        elapsed = int((time.monotonic() - start) * 1000)
-        if window.closed or window.return_to_menu or elapsed >= 300:
-            break
+    moving = now - window.last_move_time < 0.3
+    animation_index = int(now * 1000) // 20 % len(PACMAN_SEQUENCE)
+    window.animation_frame = (
+        PACMAN_SEQUENCE[animation_index] if moving else 0
+    )
 
-        window.animation_frame = (PACMAN_SEQUENCE[elapsed // 20]
-                                  if moving else 0)
-        window.screen.blit(BACKGROUND_IMAGE, (0, 0))
-        draw_game(
+    window.screen.blit(BACKGROUND_IMAGE, (0, 0))
+    draw_game(
+        window.screen,
+        window.fonts,
+        window.images,
+        maze,
+        player,
+        ghosts,
+        game_state,
+        window.animation_frame,
+    )
+    if window.show_cheats:
+        draw_cheat_menu(
             window.screen,
             window.fonts,
-            window.images,
-            maze,
-            player,
-            ghosts,
-            game_state,
-            window.animation_frame,
+            window.noclip_enabled,
+            window.invisible_enabled,
+            window.next_level_requested,
         )
-        if window.show_cheats:
-            draw_cheat_menu(
-                window.screen,
-                window.fonts,
-                window.noclip_enabled,
-                window.invisible_enabled,
-                window.next_level_requested,
-            )
-        window.refresh()
-        frame_elapsed = time.perf_counter() - frame_start
-        time.sleep(max(0, 1 / 60 - frame_elapsed))
+    window.refresh()
+
+    frame_elapsed = time.perf_counter() - frame_start
+    time.sleep(max(0, 1 / 60 - frame_elapsed))
 
 
 def wrapper(
