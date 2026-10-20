@@ -1,3 +1,5 @@
+"""Update collisions, ghosts, timers, and level progression."""
+
 from typing import TYPE_CHECKING
 import curses
 import time
@@ -19,6 +21,7 @@ if TYPE_CHECKING:
 
 def check_collision(ghost: Ghost, player: Player,
                     game_state: GameState, config: ParseConfig) -> bool:
+    """Resolve a collision and report whether the player lost a life."""
     if (ghost.y, ghost.x) == (player.y, player.x):
         if ghost.state == "frightened":
             ghost.state = "dead"
@@ -38,6 +41,7 @@ def reset_positions(player: Player, ghosts: list[Ghost],
                     last_positions: dict[str, tuple[int, int] | None],
                     last_paths: dict[str, str | None],
                     ghost_respawn_time: dict[str, float | None]) -> None:
+    """Reset player and ghost spawns, states, and movement history."""
     player.y = player.spawn_position[0]
     player.x = player.spawn_position[1]
     player.direction = (1, 0)
@@ -56,6 +60,7 @@ def update_pacgums_and_frightened(player: Player, ghosts: list[Ghost],
                                   level: LevelConfig, current_time: float,
                                   frightened_start_time: float | None,
                                   ) -> float | None:
+    """Consume pellets and update frightened states and their timer."""
     position_player: tuple[int, int] = (player.y, player.x)
 
     if position_player in game_state.position_super_pacgum:
@@ -89,6 +94,7 @@ def update_pacgums_and_frightened(player: Player, ghosts: list[Ghost],
 
 
 def check_victory(game_state: GameState) -> bool:
+    """Return whether all pellets and power pellets have been eaten."""
     if any(game_state.position_pacgum.values()) is True:
         return False
 
@@ -103,6 +109,7 @@ def move_ghost(ghost: Ghost, player: Player, maze: list[list[int]],
                ghost_respawn_time: dict[str, float | None],
                current_time: float, time_respawn: int,
                frightened: bool) -> None:
+    """Advance one ghost according to its state and respawn timer."""
     start: tuple[int, int] = (ghost.y, ghost.x)
     position_player: tuple[int, int] = (player.y, player.x)
 
@@ -174,6 +181,7 @@ def move_ghost(ghost: Ghost, player: Player, maze: list[list[int]],
 def run(stdscr: "GameWindow", maze: list[list[int]],
         player: Player, ghosts: list[Ghost],
         game_state: GameState, config: ParseConfig) -> None:
+    """Run a level until defeat, completion, or a user exit request."""
     from src.ui.ui import draw_maze, setup_terminal
 
     setup_terminal(stdscr)

@@ -1,3 +1,5 @@
+"""Load configuration and scores, then launch the game."""
+
 from pathlib import Path
 
 from src.gameplay.run import run
@@ -16,6 +18,7 @@ import sys
 
 
 def main(file_config: str) -> None:
+    """Load game data and start the graphical interface."""
     maze: list[list[int]]
     player: Player
     ghosts: list[Ghost]
@@ -55,6 +58,7 @@ def main(file_config: str) -> None:
 
 
 def cli() -> None:
+    """Parse the configuration argument and report startup errors."""
     if len(sys.argv) > 1 and len(sys.argv) <= 2:
         file_config: str = sys.argv[1]
     else:

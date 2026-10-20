@@ -1,3 +1,5 @@
+"""Validate configuration and load or save highscore data."""
+
 from pathlib import Path
 from typing import Any
 import json
@@ -10,19 +12,21 @@ from src.common.utils import Color
 
 
 class ConfigPathError(Exception):
-    """
-    Exception raised for errors related to output file paths.
-    """
+    """Represent an invalid configuration output path."""
+
     pass
 
 
 class ParseScore(BaseModel):
+    """Validate a player name and a nonnegative score."""
+
     name_player: str
     score: int
 
     @field_validator("name_player")
     @classmethod
     def check_player(cls, value: str) -> str:
+        """Validate a name of one to ten alphanumeric or space characters."""
         if len(value) > 10 or len(value) < 1:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -43,6 +47,7 @@ class ParseScore(BaseModel):
     @field_validator("score")
     @classmethod
     def check_score(cls, value: int) -> int:
+        """Reject negative scores and return the validated value."""
         if value < 0:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -53,6 +58,8 @@ class ParseScore(BaseModel):
 
 
 class ParseHighScore(BaseModel):
+    """Validate a collection containing at most ten score records."""
+
     highscore: list[ParseScore]
 
     @field_validator("highscore")
@@ -61,6 +68,7 @@ class ParseHighScore(BaseModel):
         cls,
         value: list[ParseScore],
     ) -> list[ParseScore]:
+        """Reject collections containing more than ten score records."""
         if len(value) > 10:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -99,6 +107,8 @@ def save_highscore(
 
 
 class LevelConfig(BaseModel):
+    """Validate maze dimensions and frightened duration for a level."""
+
     width: int
     height: int
     escape_time: int
@@ -106,6 +116,7 @@ class LevelConfig(BaseModel):
     @field_validator("width")
     @classmethod
     def check_width(cls, value: int) -> int:
+        """Validate a maze width between 10 and 43 cells."""
         if value < 10:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -123,6 +134,7 @@ class LevelConfig(BaseModel):
     @field_validator("height")
     @classmethod
     def check_height(cls, value: int) -> int:
+        """Validate a maze height between 10 and 20 cells."""
         if value < 10:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -140,6 +152,7 @@ class LevelConfig(BaseModel):
     @field_validator("escape_time")
     @classmethod
     def check_escape_time(cls, value: int) -> int:
+        """Validate frightened duration between zero and ten seconds."""
         if value < 0:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -156,6 +169,7 @@ class LevelConfig(BaseModel):
 
 
 def default_levels() -> list[LevelConfig]:
+    """Return the ten default level configurations."""
     return [LevelConfig(width=20, height=20, escape_time=6),
             LevelConfig(width=22, height=20, escape_time=5),
             LevelConfig(width=24, height=20, escape_time=4),
@@ -169,6 +183,8 @@ def default_levels() -> list[LevelConfig]:
 
 
 class ParseConfig(BaseModel):
+    """Validate game settings and supply fallback values."""
+
     highscore_filename: Path = Path("scores.json")
     levels: list[LevelConfig] = Field(default_factory=default_levels)
     lives: int = 3
@@ -186,6 +202,7 @@ class ParseConfig(BaseModel):
     @field_validator("highscore_filename", mode="before")
     @classmethod
     def check_extension(cls, value: Any) -> Path:
+        """Return a JSON file path, falling back to scores.json."""
         if not isinstance(value, (str, Path)):
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -213,6 +230,7 @@ class ParseConfig(BaseModel):
     @field_validator("lives", mode="before")
     @classmethod
     def check_live(cls, value: Any) -> int:
+        """Return a valid starting life count or the default value."""
         if type(value) is not int:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -239,6 +257,7 @@ class ParseConfig(BaseModel):
     @field_validator("pacgum", mode="before")
     @classmethod
     def check_pacgum(cls, value: Any) -> int:
+        """Validate the pellet percentage or return the default value."""
         if type(value) is not int or value < 1 or value > 100:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -255,6 +274,7 @@ class ParseConfig(BaseModel):
     @field_validator("levels", mode="before")
     @classmethod
     def check_levels(cls, value: Any) -> list[LevelConfig]:
+        """Validate at least ten levels or return the default sequence."""
         if type(value) is not list or len(value) < 10:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -294,6 +314,7 @@ class ParseConfig(BaseModel):
         value: Any,
         info: ValidationInfo,
     ) -> int:
+        """Validate positive points or use the default for the field."""
         defaults: dict[str, int] = {
             "points_per_pacgum": 1,
             "points_per_super_pacgum": 10,
@@ -319,6 +340,7 @@ class ParseConfig(BaseModel):
     @field_validator("level_max_time", mode="before")
     @classmethod
     def check_time(cls, value: Any) -> int:
+        """Validate the level duration or use the default time limit."""
         if type(value) is not int or value < 15:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -343,6 +365,7 @@ class ParseConfig(BaseModel):
         value: Any,
         info: ValidationInfo,
     ) -> int:
+        """Validate movement speed or use the default for the field."""
         defaults: dict[str, int] = {
             "speed_player": 10,
             "speed_ghosts": 9,
@@ -367,6 +390,7 @@ class ParseConfig(BaseModel):
     @field_validator("time_respawn_ghost", mode="before")
     @classmethod
     def check_escape_time(cls, value: int) -> int:
+        """Validate ghost respawn delay between zero and five seconds."""
         if value < 0:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
@@ -384,6 +408,7 @@ class ParseConfig(BaseModel):
     @field_validator("seed", mode="before")
     @classmethod
     def check_seed(cls, value: Any) -> int:
+        """Return an integer seed or the default value of 42."""
         if type(value) is not int:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -399,6 +424,7 @@ class ParseConfig(BaseModel):
     @field_validator("perfect", mode="before")
     @classmethod
     def check_perfect(cls, value: Any) -> bool:
+        """Ensure imperfect maze generation by returning False."""
         if value is not False:
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
@@ -413,6 +439,7 @@ class ParseConfig(BaseModel):
 
 
 def json_to_data(file: str) -> ParseConfig:
+    """Read a commented JSON configuration with validation fallbacks."""
     try:
         with open(file, "r", encoding="utf-8") as content:
             json_content: str = ""
@@ -456,6 +483,7 @@ def json_to_data(file: str) -> ParseConfig:
 
 
 def highscore_to_data(file: Path) -> ParseHighScore:
+    """Load score records or return an empty collection on errors."""
     try:
         with open(file, "r", encoding="utf8") as content:
 

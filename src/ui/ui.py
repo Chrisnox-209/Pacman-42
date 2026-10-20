@@ -33,10 +33,10 @@ WEST = 8
 MENU_OPTIONS = ("Start Game", "Highscores", "Instructions", "Quit")
 
 GHOST_IMAGES: dict[str, dict[str, pygame.Surface]] = {}
-PACGUM_IMAGE = pygame.Surface((1, 1))
-Super_PACGUM_IMAGE = pygame.Surface((1, 1))
-HUD_IMAGE = pygame.Surface((1, 1))
-BACKGROUND_IMAGE = pygame.Surface((1, 1))
+PACGUM_IMAGE: pygame.Surface = pygame.Surface((1, 1))
+Super_PACGUM_IMAGE: pygame.Surface = pygame.Surface((1, 1))
+HUD_IMAGE: pygame.Surface = pygame.Surface((1, 1))
+BACKGROUND_IMAGE: pygame.Surface = pygame.Surface((1, 1))
 
 ASSETS_FOLDER: Path = Path(__file__).resolve().parents[2] / "assets"
 PACMAN_FOLDER: Path = ASSETS_FOLDER / "geometric" / "pacman"
@@ -162,7 +162,7 @@ def load_pacman_images() -> PacmanImages:
 
 
 def load_ghost_images() -> None:
-    """Load normal and frightened ghost textures once at startup."""
+    """Load normal, frightened, and returning ghost textures."""
     for name in ("Athos", "Porthos", "Aramis", "Dartagnan"):
         folder = PACMAN_FOLDER.parent / "ghosts" / name.lower()
         GHOST_IMAGES[name] = {}
@@ -395,6 +395,7 @@ def draw_ghosts(
     maze_origin: tuple[int, int],
     frightened: bool,
 ) -> None:
+    """Draw normal, frightened, or returning ghost textures."""
     for ghost in ghosts:
         if ghost.state == "dead":
             state = "returning"
@@ -597,18 +598,19 @@ class GameWindow:
     """Provide the input method expected by the original game loop."""
 
     def __init__(self) -> None:
+        """Create the display and initialize input and interface state."""
         self.screen, self.fonts, self.images = create_display()
-        self.closed = False
+        self.closed: bool = False
         self.animation_frame = 0
         self.pending_key = -1
         self.last_player_position: tuple[int, int] | None = None
-        self.return_to_menu = False
-        self.show_cheats = False
-        self.noclip_enabled = False
-        self.invisible_enabled = False
-        self.next_level_requested = False
-        self.player_name = ""
-        self.score_error = ""
+        self.return_to_menu: bool = False
+        self.show_cheats: bool = False
+        self.noclip_enabled: bool = False
+        self.invisible_enabled: bool = False
+        self.next_level_requested: bool = False
+        self.player_name: str = ""
+        self.score_error: str = ""
 
     def refresh(self) -> None:
         """Display the frame directly, without resizing it."""
@@ -659,7 +661,6 @@ class GameWindow:
 
     def pause(self) -> None:
         """Wait for the user to resume without updating game objects."""
-
         while not self.closed:
             frame_start = time.perf_counter()
             self.screen.blit(BACKGROUND_IMAGE, (0, 0))

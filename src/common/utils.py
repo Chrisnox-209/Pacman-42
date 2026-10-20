@@ -1,11 +1,12 @@
+"""Handle wall masks, pellet placement, and terminal colors."""
+
 from enum import Enum
 import random
 
 
 class Color(Enum):
-    """
-    Enum representing ANSI color escape codes for terminal formatting.
-    """
+    """Represent ANSI color escape codes for terminal messages."""
+
     BLUE = "\033[1;34m"
     ORANGE = "\033[38;5;208m"
     RED = "\033[31m"
@@ -18,6 +19,7 @@ class Color(Enum):
 
 
 def convert_wall(nb: int) -> dict[str, int] | None:
+    """Return open directions for a wall mask, or None if invalid."""
     if nb == 0:
         return {"N": 1, "S": 1, "E": 1, "W": 1}
     elif nb == 1:
@@ -55,6 +57,7 @@ def convert_wall(nb: int) -> dict[str, int] | None:
 
 
 def possible_neighbor(nb: int, y: int, x: int) -> list[tuple[int, int]] | None:
+    """Return accessible (row, column) neighbors, or None."""
     if nb == 0:
         return [(y - 1, x), (y + 1, x), (y, x + 1), (y, x - 1)]
     elif nb == 1:
@@ -92,6 +95,7 @@ def possible_neighbor(nb: int, y: int, x: int) -> list[tuple[int, int]] | None:
 
 
 def mirror_path(path: str | None) -> str:
+    """Return the opposite direction, or an empty string if unknown."""
     if path == "N":
         return "S"
     if path == "S":
@@ -104,12 +108,17 @@ def mirror_path(path: str | None) -> str:
 
 
 def time_game(remaining_time: int) -> int:
+    """Decrease a positive timer by one and return its value."""
     if remaining_time > 0:
         remaining_time -= 1
     return remaining_time
 
 
 def find_player_spawn(maze: list[list[int]]) -> tuple[int, int]:
+    """Return an open cell near the center as (x, y).
+
+    Raise ValueError if the maze contains no valid spawn cell.
+    """
     height: int = len(maze)
     width: int = len(maze[0])
 
@@ -133,7 +142,10 @@ def find_player_spawn(maze: list[list[int]]) -> tuple[int, int]:
 
 def generate_pacgum(maze: list[list[int]],
                     percentage_pacgum: int) -> dict[tuple[int, int], bool]:
+    """Place pellets randomly outside the spawn and corner cells.
 
+    Return presence flags keyed by (row, column) coordinates.
+    """
     player_x: int
     player_y: int
 
@@ -174,6 +186,7 @@ def generate_pacgum(maze: list[list[int]],
 
 def generate_super_pacgum(maze: list[list[int]]
                           ) -> dict[tuple[int, int], bool]:
+    """Return presence flags for power pellets at the four corners."""
     height: int = len(maze)
     width: int = len(maze[0])
 
