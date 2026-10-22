@@ -1,1 +1,1 @@
-"""Provide graphical and terminal display helpers."""
+"""Provide the graphical interface for Pac-Man."""
