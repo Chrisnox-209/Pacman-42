@@ -483,6 +483,26 @@ def json_to_data(file: str) -> ParseConfig:
         )
         return ParseConfig()
 
+    except UnicodeDecodeError:
+        print(
+            f"\n{Color.ORANGE.value}[WARN] "
+            f"{Color.RED.value}(config: {file})"
+            f"{Color.RST.value} The configuration file is not valid UTF-8\n"
+            f"{Color.MAGENTA.value}[Default value] "
+            f"{Color.GREEN.value}Default configuration loaded"
+        )
+        return ParseConfig()
+
+    except OSError as error:
+        print(
+            f"\n{Color.ORANGE.value}[WARN] "
+            f"{Color.RED.value}(config: {file})"
+            f"{Color.RST.value} Unable to read configuration: {error}\n"
+            f"{Color.MAGENTA.value}[Default value] "
+            f"{Color.GREEN.value}Default configuration loaded"
+        )
+        return ParseConfig()
+
 
 def highscore_to_data(
     file: Path,
