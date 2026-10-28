@@ -484,8 +484,23 @@ def json_to_data(file: str) -> ParseConfig:
         return ParseConfig()
 
 
-def highscore_to_data(file: Path) -> ParseHighScore:
-    """Load score records or return an empty collection on errors."""
+def highscore_to_data(
+    file: Path,
+    create_if_missing: bool = False,
+) -> ParseHighScore:
+    """Load scores, optionally creating a missing file without a warning."""
+    if create_if_missing:
+        try:
+            with file.open("x", encoding="utf-8") as content:
+                content.write(
+                    ParseHighScore(highscore=[]).model_dump_json(indent=4)
+                )
+        except FileExistsError:
+            pass
+        except OSError as error:
+            print(f"Unable to initialize highscores: {error}")
+            return ParseHighScore(highscore=[])
+
     try:
         with open(file, "r", encoding="utf8") as content:
 

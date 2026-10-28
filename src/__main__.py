@@ -17,7 +17,7 @@ from pydantic import ValidationError
 import sys
 
 
-def main(file_config: str) -> None:
+def main(file_config: str | None) -> None:
     """Load game data and start the graphical interface."""
     maze: list[list[int]]
     player: Player
@@ -42,11 +42,17 @@ def main(file_config: str) -> None:
         sys.exit(1)
 
     try:
+        packaged: bool = bool(getattr(sys, "frozen", False))
         file_score: Path = config.highscore_filename
-        if getattr(sys, "frozen", False) and not file_score.is_absolute():
-            file_score = Path.home() / ".pacman-42" / file_score
+        if packaged:
+            file_score = (
+                Path(sys.executable).resolve().parent / file_score.name
+            )
+            config.highscore_filename = file_score
         file_score.parent.mkdir(parents=True, exist_ok=True)
-        scores: ParseHighScore = highscore_to_data(file_score)
+        scores: ParseHighScore = highscore_to_data(
+            file_score, create_if_missing=packaged
+        )
     except ValidationError as error:
         print(f"\n{Color.RED.value}[ERROR FILE SCORE]"
               f"{Color.ORANGE.value}",
@@ -64,6 +70,7 @@ def main(file_config: str) -> None:
 
 
 def cli() -> None:
+    """Parse source or packaged arguments and launch the game."""
     if getattr(sys, "frozen", False) and len(sys.argv) == 1:
         file_config: str | None = None
 

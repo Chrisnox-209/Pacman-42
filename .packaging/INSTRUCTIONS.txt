@@ -28,9 +28,14 @@ CHEATS
   L    Request the next level
 
 HIGHSCORES
-  In the packaged Linux version, relative highscore filenames are placed in:
+  In the packaged Linux version, highscores are stored beside the executable:
 
-    ~/.pacman-42/
+    Pacman-42/
+      Pacman-42
+      scores.json
 
-  With the default setting, the file is ~/.pacman-42/scores.json.
-  The file is initialized automatically if it is missing.
+  The filename comes from highscore_filename (scores.json by default).
+  Only the filename is used; scores stay in the executable's directory.
+  A missing file is created automatically with an empty ranking, without
+  displaying a warning. Loading and saving always use the same file,
+  regardless of the directory from which the executable is launched.
