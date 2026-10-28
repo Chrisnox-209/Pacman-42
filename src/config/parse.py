@@ -30,8 +30,8 @@ class ParseScore(BaseModel):
         if len(value) > 10 or len(value) < 1:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} The player's name is "
-                "too long must be <= 10"
+                f"{Color.RST.value} The player's name "
+                "must contain between 1 and 10 characters"
             )
 
         for c in value:
@@ -72,8 +72,8 @@ class ParseHighScore(BaseModel):
         if len(value) > 10:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} Exactly "
-                "10 hightscores are required"
+                f"{Color.RST.value} At most "
+                "10 highscores are allowed"
             )
 
         return value
@@ -127,7 +127,7 @@ class LevelConfig(BaseModel):
         if value > 43:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} Width must be <= 40"
+                f"{Color.RST.value} Width must be <= 43"
             )
 
         return value
@@ -157,13 +157,13 @@ class LevelConfig(BaseModel):
         if value < 0:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} escape_time must be <= 0"
+                f"{Color.RST.value} escape_time must be >= 0"
             )
 
         if value > 10:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} escape_time must be >= 10"
+                f"{Color.RST.value} escape_time must be <= 10"
             )
 
         return value
@@ -171,17 +171,17 @@ class LevelConfig(BaseModel):
     @field_validator("level_max_time")
     @classmethod
     def check_level_max_time(cls, value: int) -> int:
-        """Validate frightened duration between zero and ten seconds."""
+        """Validate the level time limit between 90 and 180 seconds."""
         if value < 90:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} level_max_time must be <= 90"
+                f"{Color.RST.value} level_max_time must be >= 90"
             )
 
         if value > 180:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} level_max_time must be >= 180"
+                f"{Color.RST.value} level_max_time must be <= 180"
             )
 
         return value
@@ -222,10 +222,10 @@ class ParseConfig(BaseModel):
     @classmethod
     def check_extension(cls, value: Any) -> Path:
         """Return a JSON file path, falling back to scores.json."""
-        if not isinstance(value, (str, Path)):
+        if not isinstance(value, (str, Path)) or "\0" in str(value):
             print(
                 f"\n{Color.ORANGE.value}[WARN] "
-                f"{Color.RED.value}(highscore_filename: {value})"
+                f"{Color.RED.value}(highscore_filename: {value!r})"
                 f"{Color.RST.value} Invalid highscore filename\n"
                 f"{Color.MAGENTA.value}[Default value] "
                 f"{Color.GREEN.value}highscore_filename = scores.json"
@@ -282,7 +282,7 @@ class ParseConfig(BaseModel):
                 f"\n{Color.ORANGE.value}[WARN] "
                 f"{Color.RED.value}(pacgum: {value})"
                 f"{Color.RST.value} Pacgum must be an integer "
-                "between 10 and 100\n"
+                "between 1 and 100\n"
                 f"{Color.MAGENTA.value}[Default value] "
                 f"{Color.GREEN.value}pacgum = 100"
             )
@@ -396,13 +396,14 @@ class ParseConfig(BaseModel):
         if type(value) is not int or value < 0:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} time_respawn_ghost must be <= 0"
+                f"{Color.RST.value} time_respawn_ghost must be "
+                "an integer >= 0"
             )
 
         if type(value) is not int or value > 5:
             raise ValueError(
                 f"\n{Color.BLUE.value}[INFO]"
-                f"{Color.RST.value} time_respawn_ghost must be >= 5"
+                f"{Color.RST.value} time_respawn_ghost must be <= 5"
             )
 
         return value

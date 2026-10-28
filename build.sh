@@ -5,6 +5,15 @@ RED='\033[0;31m'
 GREEN='\033[1;32m'
 RST='\033[0m'
 
+case "$(uname -s)" in
+    Linux) PACKAGE_PLATFORM="Linux" ;;
+    Darwin) PACKAGE_PLATFORM="macOS" ;;
+    *)
+        echo "This build script supports Linux and macOS."
+        exit 1
+        ;;
+esac
+
 echo -e "\n${RED}=== installing PyInstaller ... ===${RST}\n"
 uv sync
 uv pip install --python .venv/bin/python "pyinstaller==6.22.3"
@@ -27,7 +36,8 @@ echo -e "\n${RED}=== Copying package files ... ===${RST}\n"
 
 cp .packaging/INSTRUCTIONS.txt dist/Pacman-42/
 
-cd dist && zip -r -y Pacman-42-Linux.zip Pacman-42/
+rm -f "dist/Pacman-42-${PACKAGE_PLATFORM}.zip"
+cd dist && zip -r -y "Pacman-42-${PACKAGE_PLATFORM}.zip" Pacman-42/
 
 echo -e "\n${GREEN}╭─────────────────────────────────────────────────────────╮"
 echo -e "│    ✔ The complete procedure involves the zip archive    │"

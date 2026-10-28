@@ -1,7 +1,7 @@
 PACMAN-42
 =========
 
-LAUNCH (LINUX)
+LAUNCH (LINUX / MACOS)
   Extract the complete ZIP archive first.
   Open a terminal in the extracted Pacman-42 folder, then run:
 
@@ -9,7 +9,17 @@ LAUNCH (LINUX)
 
   The executable uses built-in default settings when no argument is given.
   Keep the _internal/ directory alongside the executable.
-  This build is for Linux; it is not a Windows .exe or a macOS application.
+  Use the archive built for your system: Linux or macOS.
+  A Linux executable cannot run directly on macOS, or vice versa.
+
+CONFIGURATION
+  Without an argument, the game uses its built-in default settings.
+  To use custom settings, provide a configuration file:
+
+    ./Pacman-42 config.json
+
+  Place your configuration beside the executable or use an absolute path.
+  The repository's config.json can be used as an example.
 
 CONTROLS
   Arrow keys / W A S D   Move Pac-Man
@@ -28,7 +38,7 @@ CHEATS
   L    Request the next level
 
 HIGHSCORES
-  In the packaged Linux version, highscores are stored beside the executable:
+  In the packaged game, highscores are stored beside the executable:
 
     Pacman-42/
       Pacman-42
