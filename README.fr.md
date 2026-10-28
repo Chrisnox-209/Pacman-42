@@ -12,8 +12,6 @@ Pacman-42 est un projet en équipe réalisé dans le cadre du cursus de 42. L'ob
 
 ![Démonstration du gameplay de Pacman-42](assets/gameplay.gif)
 
-> **Emplacement réservé au GIF :** ajoute ton enregistrement dans `assets/gameplay.gif` pour qu'il s'affiche ci-dessus sur GitHub. Privilégie une courte séquence optimisée pour un chargement rapide.
-
 ## Sommaire
 
 - [Description](#description)
@@ -36,7 +34,7 @@ Le joueur parcourt un labyrinthe, ramasse des Pac-Gums, évite les fantômes et 
 
 L'interface graphique repose sur **Pygame**. Les entités et l'état du jeu sont représentés par des classes Python, les données de configuration et de score sont validées avec **Pydantic**, et les déplacements des fantômes combinent **une recherche en largeur (BFS)** et d'autres stratégies. Les labyrinthes sont fournis par le **package externe A-Maze-ing imposé par le sujet**, et non par un générateur développé pour ce projet.
 
-Le jeu relie la progression automatique des niveaux, les écrans de victoire et de défaite, la saisie du nom et la sauvegarde des scores. L'intégration du packaging et les finitions de l'interface figurent dans les [Limites connues](#limites-connues).
+Le jeu relie la progression automatique des niveaux, les écrans de victoire et de défaite, la saisie du nom et la sauvegarde des scores. Le dépôt contient également un script de packaging Linux et des preuves de gestion de projet. Les problèmes restants figurent dans les [Limites connues](#limites-connues).
 
 ## Fonctionnalités
 
@@ -52,7 +50,7 @@ Le jeu relie la progression automatique des niveaux, les écrans de victoire et 
 - Paramètres configurables dans un fichier JSON acceptant également les commentaires `#` sur une ligne entière.
 - Commandes de triche pour l'évaluation : traversée des murs, invincibilité et saut de niveau.
 - Validation des enregistrements de scores et gestion des fichiers de scores absents ou incorrects.
-- Le packaging Linux est développé dans la branche `PACKAGING` ; ses commandes ne sont pas encore intégrées à cette branche.
+- Packaging Linux avec PyInstaller via `make build`, comprenant les ressources graphiques, les instructions pour les joueurs et une archive ZIP.
 
 > **Déroulement :** menu principal → niveaux successifs → victoire ou défaite → saisie du nom et validation avec Entrée → sauvegarde du score → menu principal.
 
@@ -107,6 +105,7 @@ uv run pacman-42 config.json
 | `make lint-strict` | Lance les vérifications strictes configurées. |
 | `make debug` | Exécute `uv run python3 -m pdb -m src $(CONFIG)` ; saisir `c` dans le débogueur pour continuer. |
 | `make clean` | Supprime les caches de développement et l'environnement virtuel. |
+| `make build` | Construit l'exécutable Linux et crée `dist/Pacman-42-Linux.zip`. |
 
 ## Commandes du jeu
 
@@ -212,7 +211,7 @@ Le format est vérifié par les modèles `ParseScore` et `ParseHighScore` du fic
 - Un fichier manquant charge une liste vide en mémoire ; il est créé lors de la première sauvegarde réussie.
 - Un fichier vide ou mal formé est pris en charge sans faire planter le chargeur.
 
-Le chemin vient de `highscore_filename` (normalement `scores.json`). Les chemins relatifs sont résolus depuis le dossier de travail courant ; les chemins absolus sont utilisés tels quels. Le stockage spécifique au package appartient à la branche séparée `PACKAGING`.
+Le chemin vient de `highscore_filename` (normalement `scores.json`). Depuis les sources, les chemins relatifs sont résolus depuis le dossier de travail courant ; les chemins absolus sont utilisés tels quels. L'exécutable packagé charge les chemins relatifs des scores depuis `~/.pacman-42/`. La sauvegarde utilise encore le chemin configuré d'origine : le chargement et la sauvegarde peuvent donc viser deux fichiers différents, comme indiqué dans les [Limites connues](#limites-connues). Un chemin absolu dans la configuration permet d'éviter cette différence.
 
 **Pourquoi JSON ?** Ce format est lisible, facile à vérifier pendant une évaluation, cohérent avec la configuration et ne nécessite aucun service de base de données.
 
@@ -258,17 +257,25 @@ BFS est implémenté dans `src/ai/algorithm.py` à l'aide d'une file et d'une ta
 
 ### Interface graphique
 
-`src/ui/ui.py` utilise Pygame pour le menu principal, le chargement des sprites et des polices, le HUD, les animations, les entrées clavier et les écrans de pause, victoire et défaite. Les ressources graphiques sont chargées depuis `assets/font/` et `assets/geometric/`. `src/ui/maze.py` contient également un ancien système d'affichage dans le terminal, mais le point d'entrée principal utilise l'interface Pygame.
+L'interface Pygame est répartie entre cinq modules :
 
+- `src/ui/ui.py` relie la boucle de jeu aux menus, aux animations, à la saisie du nom et à la sauvegarde en fin de partie.
+- `src/ui/window.py` gère la fenêtre, les entrées pendant le jeu, les commandes de triche et la pause/reprise.
+- `src/ui/screens.py` dessine les menus, les instructions, les meilleurs scores et les écrans de victoire/défaite, et gère la navigation dans les menus.
+- `src/ui/drawing.py` dessine le texte bitmap, le labyrinthe, les personnages, le HUD et le panneau de triche.
+- `src/ui/resources.py` charge les polices et les sprites depuis `assets/font/` et `assets/geometric/`, et calcule les dimensions d'affichage.
 
 ## Architecture logicielle générale
 
 ```text
 Pacman-42/
+├── .packaging/
+│   └── INSTRUCTIONS.txt       # Instructions incluses dans l'archive
 ├── assets/
 │   ├── font/                  # Atlas des polices bitmap
 │   ├── geometric/             # Sprites Pac-Man, fantômes et Pac-Gums
-│   └── gameplay.gif           # Ajouter l'enregistrement du gameplay
+│   └── gameplay.gif           # Enregistrement du gameplay
+├── project-management/        # Exports d'issues, contributions et répartition
 ├── src/
 │   ├── __main__.py            # CLI et démarrage
 │   ├── ai/
@@ -284,8 +291,12 @@ Pacman-42/
 │   │   ├── game.py            # Player et GameState
 │   │   └── ghost.py           # Modèle des fantômes
 │   └── ui/
-│       ├── ui.py              # Affichage et entrées Pygame
-│       └── maze.py            # Ancien affichage pour terminal
+│       ├── drawing.py         # Texte, labyrinthe, entités, HUD et triche
+│       ├── resources.py       # Polices, sprites et dimensions d'affichage
+│       ├── screens.py         # Menus, informations et écrans de fin
+│       ├── ui.py              # Navigation et liaison avec la boucle de jeu
+│       └── window.py          # Fenêtre, entrées et gestion de la pause
+├── build.sh                   # Packaging de l'exécutable Linux et du ZIP
 ├── Makefile                   # Commandes de développement et de build
 ├── config.json               # Configuration de développement
 ├── pyproject.toml            # Métadonnées et dépendances
@@ -307,13 +318,11 @@ flowchart TD
     SETUP --> MODELS
 ```
 
-Cette organisation permet de développer séparément l'intelligence artificielle, les règles du jeu, les modèles de données, la configuration et l'interface graphique, tout en définissant des échanges explicites entre les modules.
+Cette organisation permet de développer séparément l'intelligence du jeu, les règles du jeu, les modèles de données, la configuration et l'interface graphique, tout en définissant des échanges explicites entre les modules.
 
 ## Packaging et distribution
 
-> Les instructions ci-dessous concernent la branche `PACKAGING`. `build.sh` et les commandes de construction ne sont pas encore présents dans cette branche ; elles ne décrivent pas un build validé du code actuel.
-
-La branche `PACKAGING` introduit une procédure PyInstaller sous Linux avec [`build.sh`](https://github.com/Chrisnox-209/Pacman-42/blob/PACKAGING/build.sh). PyInstaller est installé **uniquement comme outil de construction** par ce script ; ce n'est pas une dépendance d'exécution du jeu.
+Le packaging Linux est intégré à cette branche via le script [`build.sh`](build.sh) à la racine et la cible `make build`. Le script synchronise les dépendances avec `uv sync` et installe **PyInstaller 6.22.3 comme outil de construction** dans `.venv` ; PyInstaller n'est pas une dépendance d'exécution du jeu. La construction nécessite également la commande `zip`.
 
 Depuis la racine du dépôt, sur Linux :
 
@@ -321,13 +330,15 @@ Depuis la racine du dépôt, sur Linux :
 make build
 ```
 
-Le script installe l'outil de construction nécessaire dans l'environnement virtuel local et génère :
+Le script construit l'exécutable, intègre les ressources graphiques, copie les [instructions pour les joueurs](.packaging/INSTRUCTIONS.txt) et crée l'archive de distribution :
 
 ```text
 dist/
-└── Pacman-42/
-    ├── Pacman-42        # Exécutable Linux
-    └── _internal/       # Interpréteur, bibliothèques et assets intégrés
+├── Pacman-42/
+│   ├── Pacman-42        # Exécutable Linux
+│   ├── INSTRUCTIONS.txt # Instructions pour les joueurs
+│   └── _internal/       # Interpréteur, bibliothèques et assets intégrés
+└── Pacman-42-Linux.zip  # Archive complète de distribution
 ```
 
 Lance l'exécutable **sans fichier de configuration** pour utiliser les valeurs par défaut de `ParseConfig()` :
@@ -344,22 +355,25 @@ Ou indique explicitement un fichier de configuration JSON :
 
 Cette commande suppose que le terminal se trouve à la racine du dépôt. Depuis un autre dossier, tu peux fournir le chemin absolu vers le fichier de configuration.
 
+L'archive ne contient pas `config.json`. Pour utiliser des réglages personnalisés après extraction, place ton fichier de configuration dans le dossier `Pacman-42/` extrait et lance `./Pacman-42 config.json`, ou fournis un chemin absolu. Sans argument, l'exécutable utilise les valeurs internes décrites dans [Configuration](#configuration), notamment les vitesses joueur/fantômes de `100`/`90`, contre `40`/`25` dans le `config.json` du dépôt.
+
 L'exécutable produit est destiné à **Linux**. PyInstaller ne permet pas de compiler directement un exécutable Windows depuis Linux : le fichier Windows `.exe` devra être généré dans un environnement Windows.
 
-Pour distribuer le jeu, archive tout le dossier `dist/Pacman-42/`, y compris `_internal/`, et ajoute de courtes instructions destinées au joueur. Par exemple, si la commande `zip` est installée :
+Pour distribuer le jeu, utilise l'archive `dist/Pacman-42-Linux.zip` produite par `make build`. Les joueurs doivent extraire l'archive complète et conserver `_internal/` à côté de l'exécutable ; le fichier `INSTRUCTIONS.txt` inclus décrit le lancement et les commandes.
 
-```bash
-cd dist
-zip -r -y Pacman-42-Linux.zip Pacman-42/
-```
-
-Teste l'archive après extraction sur une autre machine Linux avant de la publier. Le sujet demande une **version gratuite, privée ou non répertoriée**, sur itch.io ou une plateforme comparable. Le lien de téléchargement sera ajouté une fois la publication terminée.
+Teste l'archive après extraction sur une autre machine Linux avant de la publier. Le sujet demande une **version gratuite, privée ou non répertoriée**, sur itch.io ou une plateforme comparable. Aucun lien de téléchargement sur une plateforme n'est actuellement documenté dans ce dépôt.
 
 ## Gestion de projet
 
 Le projet est développé par une équipe de deux personnes. Le travail est réparti entre différentes branches, notamment `ALGO`, `UI` et `PACKAGING`, avec `main` comme branche d'intégration. Les commits Git et les opérations de fusion gardent une trace des modifications de la logique du jeu, de l'interface graphique et des outils de distribution.
 
-Le sujet de 42 exige également un [dossier de preuves de gestion de projet](project-management/) comprenant une planification ou un tableau Kanban, le suivi de l'avancement, l'analyse des risques, la répartition du travail, les tests d'acceptation et les blocages importants. **Ce dossier n'existe pas encore dans le dépôt analysé et doit être créé et complété avant le rendu.**
+Le [dossier de preuves de gestion de projet](project-management/) contient :
+
+- Le [suivi des issues](project-management/ISSUES.md) : un tableau de 37 issues avec leur état, leurs responsables et leurs dates de création et de clôture.
+- Un [export des issues](project-management/issues.json) : descriptions, labels, affectations et dates.
+- Des captures GitHub et des synthèses visuelles des contributions, de l'état des issues et de la répartition du travail.
+
+Ces fichiers documentent le suivi des tâches et l'organisation de l'équipe. Les résultats des tests d'acceptation, les décisions techniques et les blocages importants peuvent être consignés à côté de ces éléments pour expliquer comment l'équipe a validé le jeu livré.
 
 ## Limites connues
 
@@ -367,8 +381,8 @@ Le sujet de 42 exige également un [dossier de preuves de gestion de projet](pro
 2. La taille des cases dépend de l’écran, sans ajustement au nombre de colonnes du niveau ; les grands labyrinthes peuvent dépasser sur certains formats d’écran.
 3. `render_text()` assemble encore les lettres dans une image intermédiaire ; l’affichage direct des lettres reste à intégrer dans le cadre du travail sur les équivalents MLX.
 4. Certaines valeurs incorrectes réinitialisent toute la configuration au lieu du seul paramètre concerné.
-5. Le packaging doit être intégré à cette branche, vérifié après extraction et accompagné des instructions et du lien de distribution.
-6. Le dossier de preuves de gestion du projet reste à intégrer dans cette branche.
+5. Dans l'exécutable packagé, le chargement des chemins relatifs des scores utilise `~/.pacman-42/`, tandis que la sauvegarde utilise le chemin configuré d'origine. En attendant leur unification, utilise un `highscore_filename` absolu pour retrouver le même classement entre les lancements.
+6. Aucun lien de téléchargement sur une plateforme de jeu n'est encore documenté ; l'archive distribuée doit encore être validée sur une autre machine Linux.
 
 ## Ressources et utilisation de l'IA
 
@@ -385,4 +399,6 @@ Le sujet de 42 exige également un [dossier de preuves de gestion de projet](pro
 
 ### Utilisation de l'intelligence artificielle
 
-**ChatGPT** a servi d'outil d'accompagnement pour comprendre des concepts de Python et d'algorithmique, analyser des erreurs d'importation et de configuration, examiner les procédures Git et de packaging, ainsi que préparer la documentation technique, notamment ce README. Un outil intégré de génération d'images a également servi à créer les designs géométriques originaux des sprites ; leurs variantes directionnelles ont ensuite été produites par symétrie ou rotation.
+**ChatGPT** a servi d'outil d'accompagnement pour comprendre des concepts de Python et d'algorithmique, analyser des erreurs d'importation et de configuration, examiner les procédures Git et de packaging, ainsi que préparer la documentation technique, notamment ce README.
+
+**Claude** a également servi à la génération des assets graphiques du jeu. Un outil intégré de génération d'images a servi à créer les designs géométriques originaux des sprites, leurs variantes directionnelles ont ensuite été produites par symétrie ou rotation.
