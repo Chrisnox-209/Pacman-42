@@ -34,7 +34,7 @@ Le joueur parcourt un labyrinthe, ramasse des Pac-Gums, évite les fantômes et 
 
 L'interface graphique repose sur **Pygame**. Les entités et l'état du jeu sont représentés par des classes Python, les données de configuration et de score sont validées avec **Pydantic**, et les déplacements des fantômes combinent **une recherche en largeur (BFS)** et d'autres stratégies. Les labyrinthes sont fournis par le **package externe A-Maze-ing imposé par le sujet**, et non par un générateur développé pour ce projet.
 
-Le jeu relie la progression automatique des niveaux, les écrans de victoire et de défaite, la saisie du nom et la sauvegarde des scores. Le dépôt contient également un script de packaging Linux et des preuves de gestion de projet. Les problèmes restants figurent dans les [Limites connues](#limites-connues).
+Le jeu relie la progression automatique des niveaux, les écrans de victoire et de défaite, la saisie du nom et la sauvegarde des scores. Le dépôt contient également un script de packaging pour Linux et macOS, ainsi que des preuves de gestion de projet. Les problèmes restants figurent dans les [Limites connues](#limites-connues).
 
 ## Fonctionnalités
 
@@ -50,7 +50,7 @@ Le jeu relie la progression automatique des niveaux, les écrans de victoire et 
 - Paramètres configurables dans un fichier JSON acceptant également les commentaires `#` sur une ligne entière.
 - Commandes de triche pour l'évaluation : traversée des murs, invincibilité et saut de niveau.
 - Validation des enregistrements de scores et gestion des fichiers de scores absents ou incorrects.
-- Packaging Linux avec PyInstaller via `make build`, comprenant les ressources graphiques, les instructions pour les joueurs et une archive ZIP.
+- Packaging natif Linux ou macOS avec PyInstaller via `make build`, comprenant les ressources graphiques, les instructions pour les joueurs et une archive ZIP.
 
 > **Déroulement :** menu principal → niveaux successifs → victoire ou défaite → saisie du nom et validation avec Entrée → sauvegarde du score → menu principal.
 
@@ -105,7 +105,7 @@ uv run pacman-42 config.json
 | `make lint-strict` | Lance les vérifications strictes configurées. |
 | `make debug` | Exécute `uv run python3 -m pdb -m src $(CONFIG)` ; saisir `c` dans le débogueur pour continuer. |
 | `make clean` | Supprime les caches de développement et l'environnement virtuel. |
-| `make build` | Construit l'exécutable Linux et crée `dist/Pacman-42-Linux.zip`. |
+| `make build` | Construit l'exécutable natif et crée une archive ZIP Linux ou macOS. |
 
 ## Commandes du jeu
 
@@ -208,10 +208,12 @@ Le format est vérifié par les modèles `ParseScore` et `ParseHighScore` du fic
 - Les noms des joueurs doivent contenir **entre 1 et 10 caractères**, parmi les lettres, les chiffres et les espaces.
 - Les scores doivent être des **entiers positifs ou nuls**.
 - La liste de meilleurs scores contient **au maximum 10 entrées**.
-- Un fichier manquant charge une liste vide en mémoire ; il est créé lors de la première sauvegarde réussie.
+- Depuis les sources, un fichier manquant charge une liste vide en mémoire et est créé lors de la première sauvegarde réussie. L'exécutable packagé crée le fichier manquant avec un classement vide au démarrage, sans afficher d'avertissement.
 - Un fichier vide ou mal formé est pris en charge sans faire planter le chargeur.
 
-Le chemin vient de `highscore_filename` (normalement `scores.json`). Depuis les sources, les chemins relatifs sont résolus depuis le dossier de travail courant ; les chemins absolus sont utilisés tels quels. L'exécutable packagé charge les chemins relatifs des scores depuis `~/.pacman-42/`. La sauvegarde utilise encore le chemin configuré d'origine : le chargement et la sauvegarde peuvent donc viser deux fichiers différents, comme indiqué dans les [Limites connues](#limites-connues). Un chemin absolu dans la configuration permet d'éviter cette différence.
+Le chemin vient de `highscore_filename` (normalement `scores.json`). Depuis les sources, les chemins relatifs sont résolus depuis le dossier de travail courant ; les chemins absolus sont utilisés tels quels. L'exécutable packagé utilise uniquement le nom du fichier de ce paramètre et le place à côté de l'exécutable, par exemple `Pacman-42/scores.json`. Le chargement et la sauvegarde utilisent ce même fichier, quel que soit le dossier depuis lequel le jeu est lancé.
+
+Un nom de fichier invalide ou un échec de préparation du dossier des scores déclenche un avertissement et un retour à `scores.json`. Dans le jeu packagé, ce fichier de secours reste également à côté de l'exécutable.
 
 **Pourquoi JSON ?** Ce format est lisible, facile à vérifier pendant une évaluation, cohérent avec la configuration et ne nécessite aucun service de base de données.
 
@@ -296,7 +298,7 @@ Pacman-42/
 │       ├── screens.py         # Menus, informations et écrans de fin
 │       ├── ui.py              # Navigation et liaison avec la boucle de jeu
 │       └── window.py          # Fenêtre, entrées et gestion de la pause
-├── build.sh                   # Packaging de l'exécutable Linux et du ZIP
+├── build.sh                   # Packaging de l'exécutable natif et du ZIP
 ├── Makefile                   # Commandes de développement et de build
 ├── config.json               # Configuration de développement
 ├── pyproject.toml            # Métadonnées et dépendances
@@ -322,9 +324,9 @@ Cette organisation permet de développer séparément l'intelligence du jeu, les
 
 ## Packaging et distribution
 
-Le packaging Linux est intégré à cette branche via le script [`build.sh`](build.sh) à la racine et la cible `make build`. Le script synchronise les dépendances avec `uv sync` et installe **PyInstaller 6.22.3 comme outil de construction** dans `.venv` ; PyInstaller n'est pas une dépendance d'exécution du jeu. La construction nécessite également la commande `zip`.
+Le packaging Linux et macOS utilise le script [`build.sh`](build.sh) à la racine et la cible `make build`. Le script synchronise les dépendances avec `uv sync` et installe **PyInstaller 6.22.3 comme outil de construction** dans `.venv` ; PyInstaller n'est pas une dépendance d'exécution du jeu. La construction nécessite également la commande `zip`.
 
-Depuis la racine du dépôt, sur Linux :
+Depuis la racine du dépôt, sur le système cible, Linux ou macOS :
 
 ```bash
 make build
@@ -335,11 +337,13 @@ Le script construit l'exécutable, intègre les ressources graphiques, copie les
 ```text
 dist/
 ├── Pacman-42/
-│   ├── Pacman-42        # Exécutable Linux
+│   ├── Pacman-42        # Exécutable natif
 │   ├── INSTRUCTIONS.txt # Instructions pour les joueurs
 │   └── _internal/       # Interpréteur, bibliothèques et assets intégrés
-└── Pacman-42-Linux.zip  # Archive complète de distribution
+└── Pacman-42-<platform>.zip # Archive Linux ou macOS
 ```
+
+L'archive s'appelle `Pacman-42-Linux.zip` sur Linux ou `Pacman-42-macOS.zip` sur macOS.
 
 Lance l'exécutable **sans fichier de configuration** pour utiliser les valeurs par défaut de `ParseConfig()` :
 
@@ -357,11 +361,11 @@ Cette commande suppose que le terminal se trouve à la racine du dépôt. Depuis
 
 L'archive ne contient pas `config.json`. Pour utiliser des réglages personnalisés après extraction, place ton fichier de configuration dans le dossier `Pacman-42/` extrait et lance `./Pacman-42 config.json`, ou fournis un chemin absolu. Sans argument, l'exécutable utilise les valeurs internes décrites dans [Configuration](#configuration), notamment les vitesses joueur/fantômes de `100`/`90`, contre `40`/`25` dans le `config.json` du dépôt.
 
-L'exécutable produit est destiné à **Linux**. PyInstaller ne permet pas de compiler directement un exécutable Windows depuis Linux : le fichier Windows `.exe` devra être généré dans un environnement Windows.
+L'exécutable correspond au système d'exploitation et à l'architecture utilisés pour le construire. Pour créer le paquet macOS, lance `make build` sur un Mac ; une construction Linux ne peut pas être exécutée directement sur macOS. Cela correspond au [fonctionnement de PyInstaller par plateforme](https://pyinstaller.org/en/stable/operating-mode.html). Le script prend en charge Linux et macOS ; le packaging Windows n'est pas inclus.
 
-Pour distribuer le jeu, utilise l'archive `dist/Pacman-42-Linux.zip` produite par `make build`. Les joueurs doivent extraire l'archive complète et conserver `_internal/` à côté de l'exécutable ; le fichier `INSTRUCTIONS.txt` inclus décrit le lancement et les commandes.
+Pour distribuer le jeu, utilise l'archive produite par `make build` pour le système du joueur. Les joueurs doivent extraire l'archive complète et conserver `_internal/` à côté de l'exécutable ; le fichier `INSTRUCTIONS.txt` inclus décrit le lancement, les commandes et la configuration personnalisée.
 
-Teste l'archive après extraction sur une autre machine Linux avant de la publier. Le sujet demande une **version gratuite, privée ou non répertoriée**, sur itch.io ou une plateforme comparable. Aucun lien de téléchargement sur une plateforme n'est actuellement documenté dans ce dépôt.
+Teste l'archive après extraction sur une autre machine utilisant le système cible avant de la publier. Le paquet macOS doit être construit et testé sur un Mac. Le sujet demande une **version gratuite, privée ou non répertoriée**, sur itch.io ou une plateforme comparable. Aucun lien de téléchargement sur une plateforme n'est actuellement documenté dans ce dépôt.
 
 ## Gestion de projet
 
@@ -381,8 +385,7 @@ Ces fichiers documentent le suivi des tâches et l'organisation de l'équipe. Le
 2. La taille des cases dépend de l’écran, sans ajustement au nombre de colonnes du niveau ; les grands labyrinthes peuvent dépasser sur certains formats d’écran.
 3. `render_text()` assemble encore les lettres dans une image intermédiaire ; l’affichage direct des lettres reste à intégrer dans le cadre du travail sur les équivalents MLX.
 4. Certaines valeurs incorrectes réinitialisent toute la configuration au lieu du seul paramètre concerné.
-5. Dans l'exécutable packagé, le chargement des chemins relatifs des scores utilise `~/.pacman-42/`, tandis que la sauvegarde utilise le chemin configuré d'origine. En attendant leur unification, utilise un `highscore_filename` absolu pour retrouver le même classement entre les lancements.
-6. Aucun lien de téléchargement sur une plateforme de jeu n'est encore documenté ; l'archive distribuée doit encore être validée sur une autre machine Linux.
+5. Aucun lien de téléchargement sur une plateforme de jeu n'est encore documenté ; chaque archive distribuée doit encore être validée sur une autre machine utilisant le système cible.
 
 ## Ressources et utilisation de l'IA
 

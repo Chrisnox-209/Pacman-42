@@ -34,7 +34,7 @@ The player navigates a maze, collects Pac-Gums, avoids ghosts, and uses Super Pa
 
 The graphical frontend is written in **Pygame**. Game entities and state are represented by Python classes, configuration and score data are validated using **Pydantic**, and ghost movement uses **breadth-first search (BFS)** alongside other movement strategies. Mazes are provided by the **assigned external A-Maze-ing package**, not by a generator developed for this project.
 
-The game connects automatic level progression, victory and defeat screens, player-name entry, and persistent highscores. The repository also includes a Linux packaging script and project-management evidence. Remaining issues are listed under [Known Limitations](#known-limitations).
+The game connects automatic level progression, victory and defeat screens, player-name entry, and persistent highscores. The repository also includes a packaging script for Linux and macOS, and project-management evidence. Remaining issues are listed under [Known Limitations](#known-limitations).
 
 ## Features
 
@@ -50,7 +50,7 @@ The game connects automatic level progression, victory and defeat screens, playe
 - Configurable game parameters loaded from a JSON file that also supports full-line `#` comments.
 - Evaluation-oriented cheat controls for noclip, invincibility, and level skipping.
 - Input validation for highscore records and recovery from missing or malformed score files.
-- Linux packaging with PyInstaller through `make build`, including assets, player instructions, and a ZIP archive.
+- Native Linux or macOS packaging with PyInstaller through `make build`, including assets, player instructions, and a ZIP archive.
 
 > **Game flow:** Main menu → play successive levels → victory or defeat → enter a name and confirm with Enter → save the score → main menu.
 
@@ -105,7 +105,7 @@ uv run pacman-42 config.json
 | `make lint-strict` | Run the stricter configured checks. |
 | `make debug` | Run `uv run python3 -m pdb -m src $(CONFIG)`; type `c` at the debugger prompt to continue. |
 | `make clean` | Remove development caches and the virtual environment. |
-| `make build` | Build the Linux executable and create `dist/Pacman-42-Linux.zip`. |
+| `make build` | Build the native executable and create a Linux or macOS ZIP archive. |
 
 ## Controls
 
@@ -208,10 +208,12 @@ The format is validated by `ParseScore` and `ParseHighScore` in `src/config/pars
 - Player names must be **1–10 characters**, using letters, numbers, and spaces.
 - Scores must be **non-negative integers**.
 - The highscore collection must contain **no more than 10 entries**.
-- A missing file loads an empty list in memory; the file is created when a score is successfully saved.
+- In source runs, a missing file loads an empty list in memory and is created when a score is successfully saved. The packaged executable creates a missing file with an empty ranking at startup, without displaying a warning.
 - An empty or malformed file is handled without crashing the loader.
 
-The file path comes from `highscore_filename` (normally `scores.json`). In source runs, relative paths are resolved from the current working directory; absolute paths are used as provided. The packaged executable loads relative highscore paths from `~/.pacman-42/`. Its save operation currently still uses the original configured path, so loading and saving can target different files; see [Known Limitations](#known-limitations). Using the same absolute path in the configuration avoids this mismatch.
+The file path comes from `highscore_filename` (normally `scores.json`). In source runs, relative paths are resolved from the current working directory; absolute paths are used as provided. The packaged executable uses only the filename from this setting and stores it beside the executable, for example `Pacman-42/scores.json`. Loading and saving use that same file, regardless of the directory from which the game is launched.
+
+Invalid filenames or failures to prepare the configured score directory fall back to `scores.json` with a warning. In the packaged game, this fallback also stays beside the executable.
 
 **Why JSON?** It is readable, easy to inspect during peer review, integrates with the configuration approach, and does not require a database service.
 
@@ -296,7 +298,7 @@ Pacman-42/
 │       ├── screens.py         # Menus, information and end screens
 │       ├── ui.py              # UI flow and connection to the game loop
 │       └── window.py          # Window, gameplay input and pause handling
-├── build.sh                   # Linux executable and ZIP packaging
+├── build.sh                   # Native executable and ZIP packaging
 ├── Makefile                   # Common development/build commands
 ├── config.json               # Development configuration
 ├── pyproject.toml            # Project metadata and dependencies
@@ -322,9 +324,9 @@ The separation lets the team develop ghost AI, game rules, models, configuration
 
 ## Packaging and Distribution
 
-The Linux packaging workflow is integrated into this branch through the root-level [`build.sh`](build.sh) script and the `make build` target. The script synchronizes project dependencies with `uv sync` and installs **PyInstaller 6.22.3 as a build tool** in `.venv`; PyInstaller is not a runtime dependency of the game. The build also requires the `zip` command.
+The Linux and macOS packaging workflow uses the root-level [`build.sh`](build.sh) script and the `make build` target. The script synchronizes project dependencies with `uv sync` and installs **PyInstaller 6.22.3 as a build tool** in `.venv`; PyInstaller is not a runtime dependency of the game. The build also requires the `zip` command.
 
-Build on Linux from the repository root:
+Build on the target system, Linux or macOS, from the repository root:
 
 ```bash
 make build
@@ -335,11 +337,13 @@ The script builds the executable, bundles the assets, copies [player instruction
 ```text
 dist/
 ├── Pacman-42/
-│   ├── Pacman-42        # Linux executable
+│   ├── Pacman-42        # Native executable
 │   ├── INSTRUCTIONS.txt # Player instructions
 │   └── _internal/       # Embedded interpreter, libraries and assets
-└── Pacman-42-Linux.zip  # Complete distribution archive
+└── Pacman-42-<platform>.zip # Linux or macOS distribution archive
 ```
+
+The archive is named `Pacman-42-Linux.zip` on Linux or `Pacman-42-macOS.zip` on macOS.
 
 Launch the executable **without a configuration file** to use `ParseConfig()` defaults:
 
@@ -357,11 +361,11 @@ The above example assumes your current directory is the repository root. You can
 
 The archive does not include `config.json`. To use custom settings after extraction, place your configuration file in the extracted `Pacman-42/` directory and run `./Pacman-42 config.json`, or provide an absolute path. Without an argument, the executable uses the built-in defaults documented in [Configuration](#configuration), including player/ghost speeds of `100`/`90`, compared with `40`/`25` in the repository's `config.json`.
 
-The packaging workflow targets **Linux**. PyInstaller does not cross-compile Windows executables from Linux; a Windows `.exe` must be built in a Windows environment.
+The executable targets the operating system and architecture used to build it. To create the macOS package, run `make build` on a Mac; a Linux build cannot run directly on macOS. This follows [PyInstaller's platform-specific build model](https://pyinstaller.org/en/stable/operating-mode.html). The script supports Linux and macOS; Windows packaging is not included.
 
-For distribution, use the `dist/Pacman-42-Linux.zip` archive generated by `make build`. Players must extract the complete archive and keep `_internal/` alongside the executable; the included `INSTRUCTIONS.txt` describes launching and controls.
+For distribution, use the archive generated by `make build` for the player's system. Players must extract the complete archive and keep `_internal/` alongside the executable; the included `INSTRUCTIONS.txt` describes launching, controls, and custom configuration.
 
-Test the extracted archive on another Linux machine before distribution. The project subject calls for a **free, unlisted/private release** on itch.io or a comparable gaming platform. No platform download link is currently documented in this repository.
+Test the extracted archive on another machine with the target operating system before distribution. The macOS package must be built and tested on a Mac. The project subject calls for a **free, unlisted/private release** on itch.io or a comparable gaming platform. No platform download link is currently documented in this repository.
 
 ## Project Management
 
@@ -381,8 +385,7 @@ These files document task tracking and team organization. Acceptance-test result
 2. Cell size follows the screen size without accounting for each level’s column count; large mazes may exceed some screen formats.
 3. `render_text()` still composes letters into an intermediate image; direct character drawing remains part of the MLX-equivalence work.
 4. Some invalid settings reset the whole configuration instead of just the affected field.
-5. In the packaged executable, loading relative highscore paths uses `~/.pacman-42/`, while saving uses the original configured path. Until these paths are unified, use an absolute `highscore_filename` to preserve the same ranking across launches.
-6. A gaming-platform download link is not yet documented; the distributed archive still needs validation on another Linux machine.
+5. A gaming-platform download link is not yet documented; each distributed archive still needs validation on another machine with its target operating system.
 
 ## Resources and AI Usage
 
